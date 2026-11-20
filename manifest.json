@@ -1,19 +1,17 @@
 {
-  "name": "SmartFin — Manajer Keuangan Pintar",
+  "name": "SmartFin — Asisten Keuangan Pintar",
   "short_name": "SmartFin",
-  "description": "Asisten keuangan pintar: dana darurat, kontrol anggaran, pengingat tagihan, prediksi cashflow, skor kesehatan keuangan, dan notifikasi cerdas.",
-  "lang": "id",
-  "dir": "ltr",
-  "start_url": "./",
+  "description": "Asisten keuangan pintar: dana darurat, anggaran, pengingat tagihan, prediksi saldo, skor kesehatan keuangan, dan kelola rekening untuk salin & transfer.",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0f9d6b",
+  "background_color": "#f3f6f9",
   "theme_color": "#0f9d6b",
+  "lang": "id",
   "categories": ["finance", "productivity", "utilities"],
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }
