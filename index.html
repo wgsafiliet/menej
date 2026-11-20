@@ -12,8 +12,8 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
-<meta name="description" content="Smart Financial Manager — asisten keuangan pintar: dana darurat, kontrol anggaran, pengingat tagihan, prediksi cashflow, skor kesehatan keuangan, dan notifikasi cerdas. Data tersimpan lokal & tersinkron ke Google Sheets Anda.">
-<title>SmartFin — Manajer Keuangan Pintar</title>
+<meta name="description" content="SmartFin — Asisten Keuangan Pintar yang mudah dipahami: dana darurat, anggaran, pengingat tagihan, prediksi saldo, skor kesehatan keuangan, dan kelola rekening untuk salin & transfer.">
+<title>SmartFin — Asisten Keuangan Pintar</title>
 <style>
 /* ===================== DESIGN TOKENS ===================== */
 :root{
@@ -24,13 +24,14 @@
   --ink:#1a2332; --mut:#5a6a7e; --mut2:#8a98ab;
   --bg:#f3f6f9; --card:#fff; --line:#e7ecf2; --line2:#eef2f7;
   --sh:0 1px 3px rgba(20,40,80,.06),0 4px 16px rgba(20,40,80,.05);
+  --sh-lg:0 8px 32px rgba(20,40,80,.10);
   --r:16px; --r-s:11px; --r-l:22px;
   --fs:15px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Noto Sans",sans-serif;
-  background:var(--bg);color:var(--ink);font-size:var(--fs);line-height:1.5;overscroll-behavior-y:none}
+  background:var(--bg);color:var(--ink);font-size:var(--fs);line-height:1.55;overscroll-behavior-y:none}
 img{max-width:100%;height:auto}
 a{color:var(--pri)}
 button{font-family:inherit;cursor:pointer;border:0;background:none}
@@ -53,7 +54,7 @@ input,select,textarea{font-family:inherit;font-size:var(--fs);color:var(--ink)}
 .brand b{font-size:17px;line-height:1.1}
 .brand small{display:block;font-size:11px;color:var(--mut);font-weight:500;margin-top:2px}
 .nav{display:flex;flex-direction:column;gap:2px;margin-top:6px}
-.nav a{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:11px;color:var(--mut);font-weight:600;font-size:14px;text-decoration:none}
+.nav a{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:11px;color:var(--mut);font-weight:600;font-size:14px;text-decoration:none;transition:background .15s}
 .nav a .ic{width:21px;height:21px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .nav a.on{background:var(--pri-l);color:var(--pri-d)}
 .nav a:hover:not(.on){background:var(--line2)}
@@ -74,8 +75,9 @@ input,select,textarea{font-family:inherit;font-size:var(--fs);color:var(--ink)}
 .topbar .bell.has .dot{display:block}
 .wrap{padding:14px 16px 26px}
 /* ===================== CARDS & UI ===================== */
-.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:16px;margin-bottom:14px}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:16px;margin-bottom:14px;transition:box-shadow .2s,transform .15s}
 .card.tight{padding:13px}
+.card.hoverable:hover{box-shadow:var(--sh-lg)}
 .card h3{margin:0 0 12px;font-size:15px;display:flex;align-items:center;gap:8px}
 .card h3 .ic{width:18px;height:18px;fill:none;stroke:var(--pri);stroke-width:1.9}
 .card h3 a.ml{margin-left:auto;font-size:12px;color:var(--pri);font-weight:700;text-decoration:none}
@@ -93,7 +95,10 @@ input,select,textarea{font-family:inherit;font-size:var(--fs);color:var(--ink)}
 .chip.a{background:var(--amber-l);color:var(--amber)}
 .chip.r{background:var(--red-l);color:var(--red)}
 .chip.b{background:var(--blue-l);color:var(--blue)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;border-radius:12px;background:var(--pri);color:#fff;font-weight:700;font-size:14px;text-decoration:none;border:0;transition:transform .08s}
+/* Info badge — untuk penjelasan istilah awam */
+.info{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--blue-l);color:var(--blue);font-size:11px;font-weight:800;cursor:help;flex-shrink:0;border:0;line-height:1}
+.info:hover{background:var(--blue);color:#fff}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;border-radius:12px;background:var(--pri);color:#fff;font-weight:700;font-size:14px;text-decoration:none;border:0;transition:transform .08s,box-shadow .15s}
 .btn:active{transform:scale(.97)}
 .btn .ic{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
@@ -155,8 +160,8 @@ input,select,textarea{font-family:inherit;font-size:var(--fs);color:var(--ink)}
 .notif.read .t{font-weight:600}
 /* forms / inputs */
 .fld{margin-bottom:12px}
-.fld label{display:block;font-size:12px;font-weight:700;color:var(--mut);margin-bottom:5px}
-.fld input,.fld select,.fld textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:var(--card);outline:none}
+.fld label{display:block;font-size:12px;font-weight:700;color:var(--mut);margin-bottom:5px;display:flex;align-items:center;gap:6px}
+.fld input,.fld select,.fld textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:var(--card);outline:none;transition:border-color .15s,box-shadow .15s}
 .fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--pri);box-shadow:0 0 0 3px var(--pri-l)}
 .fld input.rp{text-align:right;font-weight:600}
 .seg{display:flex;gap:6px;background:var(--line2);padding:4px;border-radius:12px}
@@ -235,7 +240,7 @@ input,select,textarea{font-family:inherit;font-size:var(--fs);color:var(--ink)}
 .tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px}
 .tabs button{padding:8px 14px;border-radius:20px;background:var(--card);border:1px solid var(--line);font-size:12.5px;font-weight:700;color:var(--mut);white-space:nowrap}
 .tabs button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
-.hint{font-size:12px;color:var(--mut);background:var(--blue-l);border-radius:10px;padding:10px 12px;line-height:1.5}
+.hint{font-size:12px;color:var(--mut);background:var(--blue-l);border-radius:10px;padding:10px 12px;line-height:1.55}
 .hint b{color:var(--blue)}
 .tag-dot{width:9px;height:9px;border-radius:50%;display:inline-block}
 .collapsible summary{cursor:pointer;font-weight:700;font-size:13px;padding:8px 0;list-style:none;display:flex;align-items:center;gap:6px}
@@ -271,12 +276,30 @@ input,select,textarea{font-family:inherit;font-size:var(--fs);color:var(--ink)}
 .lg-card{background:#fff;border-radius:20px;padding:26px 20px;max-width:380px;width:100%;box-shadow:0 12px 44px rgba(20,40,80,.16);text-align:center}
 .lg-card .fld{text-align:left;margin-bottom:10px}
 @media(max-width:640px){.lg-card{padding:24px 18px}}
-
 /* PWA — tombol pasang aplikasi */
 .install-btn{position:fixed;right:14px;bottom:86px;z-index:60;display:none;align-items:center;gap:7px;padding:11px 16px;border-radius:999px;background:var(--pri);color:#fff;font-weight:700;font-size:14px;box-shadow:0 6px 20px rgba(15,157,107,.45)}
 .install-btn.show{display:inline-flex}
 .install-btn:active{transform:translateY(1px)}
 @media(min-width:960px){.install-btn{bottom:auto;top:16px;right:20px}}
+/* Kartu rekening (untuk salin nomor) */
+.rek-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:var(--sh)}
+.rek-card .rk-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.rek-card .rk-head .ic-c{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;font-size:18px;background:var(--pri-l)}
+.rek-card .rk-head .nm{font-weight:700;font-size:14.5px;line-height:1.2}
+.rek-card .rk-head .sb{font-size:11.5px;color:var(--mut);margin-top:2px}
+.rek-card .rk-head .v{margin-left:auto;font-weight:800;font-variant-numeric:tabular-nums}
+.rek-card .rk-no{display:flex;align-items:center;gap:8px;background:var(--line2);border-radius:10px;padding:9px 12px;margin-bottom:10px}
+.rek-card .rk-no .lb{font-size:11px;color:var(--mut);font-weight:700;flex:1;line-height:1.4}
+.rek-card .rk-no .lb b{display:block;font-size:13.5px;color:var(--ink);font-weight:800;font-variant-numeric:tabular-nums;margin-top:2px;letter-spacing:.3px}
+.rek-card .rk-no .cp{padding:7px 11px;border-radius:8px;background:var(--pri);color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:5px}
+.rek-card .rk-no .cp:active{transform:scale(.95)}
+.rek-card .rk-actions{display:flex;gap:7px}
+.rek-card .rk-actions button{flex:1;padding:7px;border-radius:8px;background:var(--line2);color:var(--mut);font-size:11.5px;font-weight:700;border:0}
+.rek-card .rk-actions button.edit{background:var(--blue-l);color:var(--blue)}
+.rek-card .rk-actions button.del{background:var(--red-l);color:var(--red)}
+/* onboarding step dots */
+.ob-dot{width:7px;height:7px;border-radius:50%;background:var(--line);display:inline-block;margin:0 2px}
+.ob-dot.on{background:var(--pri);width:18px;border-radius:4px}
 </style>
 </head>
 <body>
@@ -307,7 +330,6 @@ input,select,textarea{font-family:inherit;font-size:var(--fs);color:var(--ink)}
 
 <!-- ===================== APP SHELL ===================== -->
 <div class="app" id="app" hidden>
-  <!-- Sidebar (desktop) -->
   <aside class="side">
     <div class="brand">
       <div class="lg">S</div>
@@ -317,7 +339,6 @@ input,select,textarea{font-family:inherit;font-size:var(--fs);color:var(--ink)}
   </aside>
 
   <div>
-    <!-- Topbar -->
     <div class="topbar">
       <div class="brand">
         <div class="lg">S</div>
@@ -325,19 +346,17 @@ input,select,textarea{font-family:inherit;font-size:var(--fs);color:var(--ink)}
       </div>
       <div class="sp"></div>
       <div class="month" id="monthLbl">—</div>
-      <button class="bell" id="bellBtn" onclick="go('notif')">
+      <button class="bell" id="bellBtn" onclick="vibrate(10);go('notif')">
         <svg class="ic" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
         <span class="dot"></span>
       </button>
     </div>
 
-    <!-- Tombol pasang PWA (muncul otomatis saat browser mendukung install) -->
     <button id="installBtn" class="install-btn" aria-label="Pasang aplikasi">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 11l4 4 4-4"/><path d="M5 21h14"/></svg>
       Pasang App
     </button>
 
-    <!-- Views -->
     <main class="wrap" id="views">
       <section class="view" id="v-dash"></section>
       <section class="view" id="v-trx"></section>
@@ -351,14 +370,11 @@ input,select,textarea{font-family:inherit;font-size:var(--fs);color:var(--ink)}
     </main>
   </div>
 
-  <!-- Bottom nav (mobile) -->
   <nav class="navbot" id="navBot"></nav>
 </div>
 
-<!-- FAB -->
-<button class="fab" id="fab" hidden onclick="openAdd()"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+<button class="fab" id="fab" hidden onclick="vibrate(15);openAdd()"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
 
-<!-- ===================== MODAL / SHEET ===================== -->
 <div class="scrim" id="scrim" onclick="closeSheet()"></div>
 <div class="sheet" id="sheet">
   <div class="handle"></div>
@@ -370,9 +386,6 @@ input,select,textarea{font-family:inherit;font-size:var(--fs);color:var(--ink)}
 
 <script>
 /* ===================== APP CORE ===================== */
-// data tersimpan lokal di perangkat ini (localStorage)
-// $ sebagai function declaration (bukan const) agar terpasang di window &
-// pasti terjangkau dari onclick inline maupun badan fungsi di semua browser.
 function $(i){ return document.getElementById(i); }
 const R = n => 'Rp' + (Math.round(+n||0)).toLocaleString('id-ID');
 const Rs = n => 'Rp ' + Math.round(+n||0).toLocaleString('id-ID');
@@ -391,11 +404,20 @@ const daysUntil = d => { if(!d) return Infinity; const x=new Date(d); x.setHours
 const MONTHS = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
 const MONTHS_L = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 
-// State
+/* ===== Getar (haptic feedback) saat klik tombol penting =====
+   Memerlukan perangkat Android/sentuh. Di iOS/desktop diam saja (tidak error).
+   Bisa dimatikan dari Pengaturan > Preferensi > Mode Getar. */
+function vibrate(pattern){
+  try{
+    const set = D().pengaturan;
+    if(set && set.getar === false) return;
+    if(navigator.vibrate) navigator.vibrate(pattern || 12);
+  }catch(e){}
+}
+
 let S = { tab:'dash', d:null, q:[], busy:0, modal:null, filterMonth:monthKey(), edit:null };
 const D = () => S.d || DEMO;
 
-// ===== default kategori & konfigurasi awal =====
 const DEF_KAT = [
   {id:'k1',nama:'Gaji',tipe:'in',ikon:'💼',warna:'#0f9d6b'},
   {id:'k2',nama:'Freelance',tipe:'in',ikon:'🧾',warna:'#34d399'},
@@ -419,42 +441,36 @@ const DEF_DD = [
   {id:'dd6',kategori_kebutuhan:'Kebutuhan lain',jumlah_bulanan:700000}
 ];
 const DEF_SET = {
-  nama:'Pengguna', matauang:'IDR', penghasilanBulanan:0, // 0 = belum diisi (tanpa angka contoh)
+  nama:'Pengguna', matauang:'IDR', penghasilanBulanan:0,
   alokasi:{kebutuhan:50,tabungan:20,investasi:10,hiburan:15,bebas:5},
   notif:{danaDarurat:1,anggaran:1,tagihan:1,cashflow:1,target:1,langganan:1,abnormal:1,tidakCatat:1,evaluasi:1,gaji:1,utang:1},
   tenang:{on:0,mulai:'22:00',selesai:'07:00'},
-  danaDaruratRekening:'' // rekening yang dianggap dana darurat (opsional); bila kosong = dihitung dari tabungan
+  danaDaruratRekening:'',
+  getar:true   // <-- mode getar saat klik tombol penting (bisa dimatikan)
 };
-// Templat data KOSONG — aplikasi mulai dari kosong; angka hanya muncul setelah
-// pengguna mengisinya (transaksi, rekening, pengaturan). Kategori bawaan & satu
-// rekening nol-saldo hanyalah kerangka agar bisa langsung mencatat transaksi.
 const KOSONG = {
-  ver:2,
-  rekening:[{id:'r1',nama:'Rekening utama',jenis:'Bank',saldo_awal:0}],
+  ver:3,  // naik versi: tambah field nomor_rekening & bank pada Rekening
+  rekening:[{id:'r1',nama:'Rekening utama',jenis:'Bank',bank:'',nomor_rekening:'',saldo_awal:0}],
   kategori:DEF_KAT.slice(),
   transaksi:[], anggaran:[], tagihan:[], utang:[], target:[], danaDarurat:[],
   pengaturan:JSON.parse(JSON.stringify(DEF_SET)),
   notifikasi:[]
 };
-const DEMO = KOSONG; // nama lama dipertahankan demi kompatibilitas internal
+const DEMO = KOSONG;
 
-/* ===================== DATA LAYER (local-first + sinkron Google Sheets) ===================== */
-// URL Apps Script ditanam langsung di sini (tanpa UI pengaturan).
-// Data SELALU disimpan dulu ke localStorage perangkat, lalu disinkronkan ke
-// Google Sheets di latar belakang (best-effort). Kalau Sheets gangguan/offline,
-// data tetap aman di perangkat & dicoba ulang saat koneksi pulih.
-const API = 'https://script.google.com/macros/s/AKfycbw0kgkqxGkKGtyEX1VKr6Yp6LYLqj0mB7u3M1l2hsJD6-sxMVhcVvnDxnwGgp707xg/exec';
+/* ===================== DATA LAYER ===================== */
+const API = 'https://script.google.com/macros/s/AKfycbz1mwr6ugMqHXPVct0CHXxKfkzqxvNsSdi7aeDRWxqnMFAe8fwWT4OKXuOX0yMvSA/exec';
 
 function normalizeD(d){
   d = d || {};
-  d.rekening = d.rekening || [];
+  d.rekening = (d.rekening||[]).map(r=>({bank:'',nomor_rekening:'',...r}));
   d.kategori = (d.kategori && d.kategori.length) ? d.kategori : DEF_KAT.slice();
   d.transaksi = d.transaksi || [];
   d.anggaran = d.anggaran || [];
   d.tagihan = d.tagihan || [];
   d.utang = d.utang || [];
   d.target = d.target || [];
-  d.danaDarurat = d.danaDarurat || []; // kosong sampai diisi pengguna (DEF_DD hanya contoh opsional)
+  d.danaDarurat = d.danaDarurat || [];
   d.pengaturan = Object.assign(JSON.parse(JSON.stringify(DEF_SET)), d.pengaturan||{});
   d.pengaturan.notif = Object.assign(DEF_SET.notif, d.pengaturan.notif||{});
   d.pengaturan.tenang = Object.assign(DEF_SET.tenang, d.pengaturan.tenang||{});
@@ -462,10 +478,8 @@ function normalizeD(d){
   d.notifikasi = d.notifikasi || [];
   return d;
 }
-// simpan ke localStorage perangkat (selalu — cadangan utama)
 function persist(){ L('sf_d', S.d); }
 
-// kirim/baca ke Google Sheets via Apps Script (best-effort; diam kalau gagal)
 async function apiRaw(action, body){
   try{
     const r = await fetch(API, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({action, token:L('sf_tok')||'', ...body})});
@@ -480,11 +494,6 @@ async function apiSync(action, body){
     return (j && j.ok) ? j : null;
   }catch(e){ return null; }
 }
-// Antrian perubahan belum terkirim (local-first: data aman walau offline).
-// Setiap mutasi langsung diterapkan ke lokal + masuk antrian, lalu dicoba
-// dikirim. Bila gagal tetap di antrian & dikirim ulang saat online. pull()
-// tidak jalan selama antrian masih ada isi — agar data lokal yang belum
-// terkirim tidak ditimpa & hilang.
 function persistQ(){ L('sf_q', S.q); }
 function pushQ(op){ S.q.push(op); persistQ(); flush(); }
 let _flushing=false;
@@ -494,29 +503,28 @@ async function flush(){
   try{
     const batch = S.q.slice(0, 25);
     const j = await apiSync('sync', {ops: batch});
-    if(j){ S.q = S.q.slice(batch.length); persistQ(); }   // terkirim → buang dari antrian
+    if(j){ S.q = S.q.slice(batch.length); persistQ(); }
   }catch(e){}
   _flushing=false;
 }
 async function pull(){
-  if(S.q.length || !navigator.onLine) return;             // ada perubahan belum terkirim → jangan tarik (anti data-hilang)
+  if(S.q.length || !navigator.onLine) return;
   const j = await apiSync('data', {});
   const d = j && j.d;
-  // hanya timpa lokal bila Sheets punya data nyata (lokal masih kosong/baru → terima data Sheets)
   if(d && ((d.transaksi||[]).length || (d.rekening||[]).length || (d.tagihan||[]).length || (d.target||[]).length)){
     S.d = normalizeD(d); L('sf_d', S.d); renderAll();
   }
 }
 function syncNow(){ flush(); pull(); }
 
-// ===== LOGIN, LOGOUT & GANTI SANDI =====
+/* ===== LOGIN, LOGOUT & GANTI SANDI ===== */
 function showLogin(msg, retry){
   const v=$('loginView'); if(!v) return;
   $('splash').style.display='none';
-  $('app').hidden=true; S.d=null;   // jangan tampilkan data apa pun di layar login
+  $('app').hidden=true; S.d=null;
   if(window._syncTimer){ clearInterval(window._syncTimer); window._syncTimer=null; }
   v.style.display='flex';
-  const first = S._hasPwd===false;  // sandi server belum ada → mode atur sandi
+  const first = S._hasPwd===false;
   $('_lgCWrap').style.display = first?'block':'none';
   const b=$('_lgBtn');
   b.textContent = retry?'Coba lagi':(first?'Atur sandi & mulai':'Masuk');
@@ -554,7 +562,7 @@ function openGantiSandi(){
     <div class="fld"><label>Sandi lama</label><input id="_pwOld" type="password" autocomplete="current-password"></div>
     <div class="fld"><label>Sandi baru (min. 4 karakter)</label><input id="_pwNew" type="password" autocomplete="new-password"></div>
     <div class="fld"><label>Ulangi sandi baru</label><input id="_pwNew2" type="password" autocomplete="new-password"></div>
-    <div class="row" style="gap:8px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="saveGantiSandi()">Simpan</button></div>`);
+    <div class="row" style="gap:8px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="vibrate(20);saveGantiSandi()">Simpan</button></div>`);
 }
 async function saveGantiSandi(){
   const o=$('_pwOld').value, n=$('_pwNew').value, n2=$('_pwNew2').value;
@@ -564,34 +572,31 @@ async function saveGantiSandi(){
   const j=await apiRaw('changePassword', {oldPassword:o, newPassword:n});
   if(!j){ toast('Server tidak terjangkau',2); return; }
   if(!j.ok){ toast(j.err||j.error||'Gagal ganti sandi',1); return; }
-  const li=await apiRaw('login', {password:n});  // token lama dicabut → buat sesi baru
+  const li=await apiRaw('login', {password:n});
   if(li && li.ok) L('sf_tok', li.token);
   closeSheet(); toast('Sandi diganti — perangkat lain perlu masuk lagi');
 }
 
 /* ===================== LOAD / BOOT ===================== */
-// deteksi sisa data contoh versi lama yang belum pernah diedit pengguna → perlakukan sebagai kosong
 function isDemoSeed(d){ return !!(d && !d.ver && Array.isArray(d.rekening) && d.rekening.some(r=>r.id==='r1'&&r.nama==='BCA') && (d.utang||[]).some(u=>u.id==='u1'&&u.nama==='Kartu kredit BCA') && (d.danaDarurat||[]).some(x=>x.id==='dd1'&&x.jumlah_bulanan===2000000)); }
 async function boot(){
-  S.q = L('sf_q') || [];            // muat antrian perubahan belum terkirim
+  S.q = L('sf_q') || [];
   setTimeout(()=>{ $('splash').style.display='none'; }, 400);
-  // data TIDAK dimuat sebelum login — siapa pun yang membuka link tanpa sandi
-  // hanya melihat layar masuk, tidak pernah melihat data.
   const st = await apiRaw('status', {});
   if(!st || !st.ok){ showLogin('Server tidak terjangkau. Periksa internet lalu coba lagi.', true); return; }
-  S._hasPwd = !!st.hasPassword;     // sandi belum ada di server → mode atur sandi pertama
+  S._hasPwd = !!st.hasPassword;
   if(!L('sf_tok')){ showLogin(); return; }
   enterApp();
 }
 function enterApp(){
   let ld = L('sf_d');
-  if(isDemoSeed(ld)) ld = null;     // data contoh lama → mulai bersih (data asli tetap bisa ditarik dari Sheets)
+  if(isDemoSeed(ld)) ld = null;
   S.d = normalizeD(ld || KOSONG);
   $('loginView').style.display='none';
   $('app').hidden=false;
   afterData();
-  syncNow();                        // kirim antrian + tarik data terbaru dari Sheets
-  if(!window._syncTimer){ window._syncTimer=setInterval(syncNow, 60000); addEventListener('online', syncNow); } // sinkron berkala (lintas perangkat)
+  syncNow();
+  if(!window._syncTimer){ window._syncTimer=setInterval(syncNow, 60000); addEventListener('online', syncNow); }
 }
 function afterData(){
   buildNav();
@@ -599,7 +604,7 @@ function afterData(){
   recomputeAll();
 }
 
-/* ===================== MUTASI DATA (tambah/edit/hapus) ===================== */
+/* ===================== MUTASI DATA ===================== */
 function mutate(tipe, op, row){
   if(tipe==='pengaturan'){
     S.d.pengaturan = row;
@@ -613,7 +618,6 @@ function mutate(tipe, op, row){
   pushQ({t:tipe, op, id:row&&row.id, row});
   recomputeAll();
 }
-// simpan pengaturan
 function savePengaturan(){
   persist();
   pushQ({t:'pengaturan', op:'set', row:S.d.pengaturan});
@@ -628,7 +632,6 @@ function recomputeAll(){
 const KAT = id => (D().kategori.find(k=>k.id===id) || {nama:'?',ikon:'•',warna:'#8a98ab'});
 const REK = id => (D().rekening.find(r=>r.id===id) || {nama:'?'});
 
-// saldo rekening = saldo_awal + pemasukan - pengeluaran (transf antar rekening netral)
 function saldoRekening(rid){
   const r = REK(rid); if(!r) return 0;
   let s = +r.saldo_awal||0;
@@ -643,26 +646,14 @@ function saldoRekening(rid){
   return s;
 }
 function totalSaldo(){ return D().rekening.reduce((a,r)=>a+saldoRekening(r.id),0); }
-
-// transaksi bulan tertentu
-function trxByMonth(mk){
-  return D().transaksi.filter(t=>String(t.tgl).slice(0,7)===mk);
-}
+function trxByMonth(mk){ return D().transaksi.filter(t=>String(t.tgl).slice(0,7)===mk); }
 function sumIn(trxs){ return trxs.filter(t=>t.tipe==='in').reduce((a,t)=>a+(+t.jumlah||0),0); }
 function sumOut(trxs){ return trxs.filter(t=>t.tipe==='out').reduce((a,t)=>a+(+t.jumlah||0),0); }
 
-// ===== 1) DANA DARURAT & REKOMENDASI =====
-// biaya hidup POKOK: baris bernama "cicilan/utang/angsuran" diabaikan di sini
-// karena cicilan riil diambil otomatis dari daftar Utang (anti dobel hitung).
 function biayaHidupPokok(){ return D().danaDarurat.reduce((a,x)=>a+((/cicilan|utang|angsuran/i.test(x.kategori_kebutuhan||''))?0:(+x.jumlah_bulanan||0)),0); }
-// total cicilan per bulan dari seluruh utang aktif
 function cicilanBulanan(){ return debtsActive().reduce((a,u)=>a+(+u.cicilan||0),0); }
-// beban bulanan wajib = biaya hidup pokok + cicilan
 function bebanBulanan(){ return biayaHidupPokok()+cicilanBulanan(); }
-// alias lama (kompatibilitas)
 function biayaHidupBulanan(){ return biayaHidupPokok(); }
-// penghasilan: prioritas nilai di Pengaturan; bila kosong → estimasi rata-rata
-// pemasukan 3 bulan terakhir; selalu menghasilkan angka (tidak pernah kosong).
 function penghasilanInfo(){
   const set=+D().pengaturan.penghasilanBulanan||0;
   if(set>0) return {v:set, src:'pengaturan'};
@@ -671,13 +662,8 @@ function penghasilanInfo(){
   if(cnt) return {v:Math.round(sum/cnt), src:'estimasi'};
   return {v:0, src:'belum-diatur'};
 }
-// rasio cicilan terhadap penghasilan (%). null bila penghasilan belum diatur.
 function rasioCicilan(){ const inc=penghasilanInfo().v; const c=cicilanBulanan(); return inc>0 ? c/inc*100 : null; }
 function rasioCicilanStatus(){ const r=rasioCicilan(); if(r==null) return {cls:'',l:'Atur penghasilan'}; if(r<=30) return {cls:'g',l:'Aman'}; if(r<=40) return {cls:'a',l:'Waspada'}; return {cls:'r',l:'Tinggi'}; }
-// REKOMENDASI DANA DARURAT:
-//   target ideal = 6 × (biaya hidup pokok + cicilan/bulan), minimum 3 ×.
-//   Setoran disarankan = kekurangan ÷ 12 bulan, dibatasi maks 25% penghasilan
-//   dan maks kapasitas menabung (penghasilan − beban). ETA dihitung ulang.
 function rekomDanaDarurat(){
   const ef=calcEmergency();
   const inc=penghasilanInfo();
@@ -697,10 +683,8 @@ function rekomDanaDarurat(){
   if(etaBulan!=null){ const d=new Date(); d.setMonth(d.getMonth()+etaBulan); etaTgl=MONTHS[d.getMonth()]+' '+d.getFullYear(); }
   return {ef,inc,sisaIdeal,sisaMin,kapasitas,per12,saran,terbatas,etaBulan,etaTgl};
 }
-// apakah pengguna sudah mengisi data apa pun (pembeda tampilan kosong vs terisi)
 function hasData(){ const d=D(); return bebanBulanan()>0 || penghasilanInfo().v>0 || (d.transaksi||[]).length>0 || (d.utang||[]).length>0 || (d.tagihan||[]).length>0 || (d.target||[]).length>0 || danaDaruratSaldo()>0; }
 function danaDaruratSaldo(){
-  // prioritas: rekening yang ditandai; jika tidak ada, ambil rekening bernama mengandung "darurat"; else 0
   const set = D().pengaturan;
   if(set.danaDaruratRekening) return saldoRekening(set.danaDaruratRekening);
   const r = D().rekening.find(x=>/darurat|emergency/i.test(x.nama));
@@ -724,13 +708,8 @@ function calcEmergency(){
   return {biaya,cicilan,beban,dana,rasio,min,ideal,max,status,cls,emoji,pctMin,pctIdeal,sisaMin,sisaIdeal,bulanTahan};
 }
 
-// ===== 2) ANGGARAN / KONTROL PENGELUARAN =====
-function budgetFor(katId, mk){
-  return D().anggaran.find(a=>a.kategori_id===katId && a.bulan===mk);
-}
-function spentByKat(katId, mk){
-  return trxByMonth(mk).filter(t=>t.tipe==='out' && t.kategori_id===katId).reduce((a,t)=>a+(+t.jumlah||0),0);
-}
+function budgetFor(katId, mk){ return D().anggaran.find(a=>a.kategori_id===katId && a.bulan===mk); }
+function spentByKat(katId, mk){ return trxByMonth(mk).filter(t=>t.tipe==='out' && t.kategori_id===katId).reduce((a,t)=>a+(+t.jumlah||0),0); }
 function budgetRows(mk){
   return D().anggaran.filter(a=>a.bulan===mk).map(a=>{
     const k=KAT(a.kategori_id); const spent=spentByKat(a.kategori_id,mk);
@@ -742,12 +721,10 @@ function budgetRows(mk){
   });
 }
 
-// ===== 3) TAGIHAN & UTANG jatuh tempo =====
 function billsUpcoming(){
   const now=new Date(); now.setHours(0,0,0,0);
   return D().tagihan.filter(b=>b.status!=='lunas').map(b=>{
     let d=new Date(b.jatuh_tempo); if(isNaN(d)) return null;
-    // jika sudah lewat bulan ini, geser ke bulan depan sesuai frekuensi (untuk pengingat berulang)
     d.setHours(0,0,0,0);
     const dd=daysUntil(b.jatuh_tempo);
     return {...b, hari:dd};
@@ -755,28 +732,23 @@ function billsUpcoming(){
 }
 function debtsActive(){ return D().utang.filter(u=>+u.sisa>0); }
 
-// ===== 4) PREDIKSI CASHFLOW =====
 function nextIncomeDate(){
-  // perkiraan gajian berikutnya: cari transaksi 'Gaji' bulan lalu, ambil tanggalnya untuk bulan depan
   const gaji = D().transaksi.filter(t=>t.tipe==='in' && KAT(t.kategori_id).nama==='Gaji').sort((a,b)=>a.tgl<b.tgl?-1:1);
   if(gaji.length){
     const last=gaji[gaji.length-1]; const d=new Date(last.tgl); const next=new Date();
     next.setDate(d.getDate()); if(next<new Date()) next.setMonth(next.getMonth()+1);
     return next;
   }
-  // default: tanggal 1 bulan depan
   const n=new Date(); n.setMonth(n.getMonth()+1); n.setDate(1); return n;
 }
 function predictCashflow(){
   const saldo = totalSaldo();
   const nextIn = nextIncomeDate();
   const daysLeft = Math.max(0, daysUntil(nextIn.toISOString().slice(0,10)));
-  // tagihan jatuh tempo sebelum gajian berikutnya
   const billsBefore = billsUpcoming().filter(b=>b.hari>=0 && b.hari<=daysLeft);
   const cicilanBefore = debtsActive().filter(u=>{ const dd=daysUntil(u.jatuh_tempo); return dd>=0 && dd<=daysLeft; });
   const totalBills = billsBefore.reduce((a,b)=>a+(+b.jumlah||0),0);
   const totalCicilan = cicilanBefore.reduce((a,u)=>a+(+u.cicilan||0),0);
-  // perkiraan pengeluaran harian (rata-rata 30 hari terakhir)
   const lately = D().transaksi.filter(t=>t.tipe==='out' && daysUntil(t.tgl)>=-30 && daysUntil(t.tgl)<=0).reduce((a,t)=>a+(+t.jumlah||0),0);
   const dailyAvg = lately/30;
   const projSpend = dailyAvg*daysLeft;
@@ -788,47 +760,36 @@ function predictCashflow(){
   return {saldo,daysLeft,nextIn,billsBefore,cicilanBefore,totalBills,totalCicilan,dailyAvg,projSpend,projSaldo,incomeEst,risk,cls,emoji};
 }
 
-// ===== 5) TARGET =====
 function goalProgress(g){
   const pct = g.target_jumlah>0 ? Math.min(100, Math.round(g.terkumpul/g.target_jumlah*100)) : 0;
   const sisa = Math.max(0, g.target_jumlah-g.terkumpul);
   const now=new Date();
-  // berapa bulan lagi sampai target tanggal
   const td=new Date(g.target_tanggal); if(isNaN(td)) return {...g,pct,sisa,etaBulan:null,st:'—',cls:'g'};
   const blnLeft = Math.max(0, Math.round((td-now)/(30*86400000)));
-  // setoran ideal per bulan untuk capai tepat waktu
   const ideal = blnLeft>0 ? sisa/blnLeft : sisa;
   const setoran = +g.setoran_bulanan||0;
   let st='on track', cls='g';
   if(setoran < ideal*0.8 && blnLeft>0){ st='tertinggal'; cls='a'; }
   if(blnLeft<=0 && sisa>0){ st='terlewat'; cls='r'; }
-  // eta berdasarkan setoran aktual
   let etaBulan = setoran>0 ? Math.ceil(sisa/setoran) : null;
   if(etaBulan!==null && sisa<=0) etaBulan=0;
   return {...g,pct,sisa,blnLeft,ideal,setoran,etaBulan,st,cls};
 }
 
-// ===== 6) SKOR KESEHATAN KEUANGAN (0-100) =====
 function calcHealth(){
   const ef = calcEmergency();
   const cf = predictCashflow();
   const mk=monthKey(); const br=budgetRows(mk);
   const set = D().pengaturan;
-
-  // (30) dana darurat: capai 6 bulan = 100%
   const sEF = Math.min(100, ef.rasio/6*100);
-  // (25) cashflow: proyeksi saldo >= penghasilan 1 bulan = 100; <0 = 0
   const cfRef = Math.max(1, penghasilanInfo().v||bebanBulanan());
   const sCF = Math.max(0, Math.min(100, cf.projSaldo/cfRef*100));
-  // (20) kontrol pengeluaran: rata2 pct anggaran terpakai (lebih rendah = lebih baik)
   let sBG = 100;
   if(br.length){ const avg=br.reduce((a,b)=>a+Math.min(120,b.pct),0)/br.length; sBG = Math.max(0, 100 - Math.max(0,avg-70)*1.6); }
-  // (15) beban utang: rasio cicilan/bulan vs penghasilan
   const cicilanB = cicilanBulanan();
   const income = penghasilanInfo().v;
   const debtRatio = income>0 ? cicilanB/income : 0;
-  const sDB = Math.max(0, 100 - debtRatio*200); // 50% beban = 0
-  // (10) konsistensi menabung: ada setoran dana darurat/target 3 bulan terakhir
+  const sDB = Math.max(0, 100 - debtRatio*200);
   const ddRekId = set.danaDaruratRekening || (D().rekening.find(x=>/darurat|emergency/i.test(x.nama))||{}).id;
   const in90 = t => { const dd=daysUntil(t.tgl); return dd>=-90 && dd<=0; };
   const tabungan3 = D().transaksi.filter(t=>{
@@ -837,7 +798,6 @@ function calcHealth(){
     return false;
   }).length;
   const sSV = Math.min(100, tabungan3/3*100);
-
   const total = Math.round(sEF*0.30 + sCF*0.25 + sBG*0.20 + sDB*0.15 + sSV*0.10);
   let status, cls;
   if(total<40){ status='Berisiko'; cls='r'; }
@@ -846,18 +806,16 @@ function calcHealth(){
   else { status='Sehat'; cls='g'; }
   return {total,status,cls,parts:[
     {n:'Kecukupan dana darurat',w:30,s:Math.round(sEF)},
-    {n:'Stabilitas cashflow',w:25,s:Math.round(sCF)},
+    {n:'Stabilitas arus kas',w:25,s:Math.round(sCF)},
     {n:'Kontrol pengeluaran',w:20,s:Math.round(sBG)},
     {n:'Beban utang',w:15,s:Math.round(sDB)},
     {n:'Konsistensi menabung',w:10,s:Math.round(sSV)}
   ], cicilanBulanan:cicilanB, debtRatio};
 }
 
-// ===== 7) ALOKASI GAJI (adaptif) =====
 function recommendAllocation(){
   const set=D().pengaturan; const base=set.alokasi;
   const h=calcHealth();
-  // bila beban utang tinggi, geser dari hiburan+bebas ke tabungan
   let a={...base};
   if(h.debtRatio>0.3){
     const shift=Math.min(10, Math.round((h.debtRatio-0.3)*100));
@@ -865,7 +823,6 @@ function recommendAllocation(){
     a.bebas=Math.max(0,a.bebas-Math.floor(shift/2));
     a.tabungan=Math.min(40,a.tabungan+shift+Math.ceil(shift/2));
   }
-  // bila dana darurat belum aman, tambah tabungan
   const ef=calcEmergency();
   if(ef.rasio<3){
     const shift=Math.min(8, Math.round((3-ef.rasio)*2));
@@ -875,12 +832,10 @@ function recommendAllocation(){
   return a;
 }
 
-// ===== 8) DETEKSI PENGELUARAN ABNORMAL =====
 function abnormalSpending(){
   const mk=monthKey();
   const out=[];
   D().kategori.filter(k=>k.tipe==='out').forEach(k=>{
-    // rata-rata 3 bulan terakhir
     let sum=0,cnt=0;
     for(let i=1;i<=3;i++){ const d=new Date(); d.setMonth(d.getMonth()-i); const mk2=d.toISOString().slice(0,7); const s=spentByKat(k.id,mk2); if(s>0){sum+=s;cnt++;} }
     const avg = cnt>0?sum/cnt:0;
@@ -893,7 +848,6 @@ function abnormalSpending(){
   return out.sort((a,b)=>b.pct-a.pct);
 }
 
-// ===== 9) GENERATOR NOTIFIKASI PINTAR =====
 function dedupKey(tipe, kunci){ return tipe+'|'+(kunci||''); }
 function inQuietHours(){
   const q=D().pengaturan.tenang; if(!q.on) return false;
@@ -901,33 +855,26 @@ function inQuietHours(){
   const [h1,m1]=q.mulai.split(':').map(Number); const [h2,m2]=q.selesai.split(':').map(Number);
   const s1=h1*60+m1, s2=h2*60+m2;
   if(s1<s2) return hm>=s1 && hm<s2;
-  return hm>=s1 || hm<s2; // melewati tengah malam
+  return hm>=s1 || hm<s2;
 }
 function addNotif(n){
-  // n: {tipe,kunci,prioritas(crit/hi/mid/lo),emoji,judul,pesan,aksi}
   const set=D().pengaturan.notif||{};
   const map={danaDarurat:'danaDarurat',anggaran:'anggaran',tagihan:'tagihan',cashflow:'cashflow',target:'target',langganan:'langganan',abnormal:'abnormal',tidakCatat:'tidakCatat',evaluasi:'evaluasi',gaji:'gaji',utang:'utang'};
   const key=map[n.tipe];
-  if(key && !set[key]) return; // dimatikan pengguna
+  if(key && !set[key]) return;
   const dk=dedupKey(n.tipe,n.kunci);
   const arr=D().notifikasi;
-  // cek apakah sudah ada notifikasi aktif (belum ditangani) dengan kunci sama dalam 24 jam
   const exists = arr.find(x=>x.kunci===dk && x.status!=='handled' && (Date.now()-new Date(x.timestamp).getTime())<86400000);
-  if(exists){ // update pesan jika lebih parah, jangan buat duplikat
+  if(exists){
     if(n.prioritas==='crit' && exists.prioritas!=='crit'){ exists.prioritas='crit'; exists.pesan=n.pesan; }
     return;
   }
   const notif={ id:uid2(), timestamp:new Date().toISOString(), kunci:dk, status:'new', snoozeUntil:null, ...n };
   arr.unshift(notif);
-  // batasi 100 notif
   if(arr.length>100) arr.length=100;
 }
 function generateNotifications(){
   if(!D()) return;
-  const arr=D().notifikasi||[];
-  // tandai notifikasi event yang sudah tidak relevan sebagai handled? tidak—biarkan pengguna kelola.
-  // hanya generate yang baru:
-  // 1) dana darurat
   const ef=calcEmergency();
   if(ef.beban>0&&ef.rasio<3){
     const rk=rekomDanaDarurat();
@@ -940,43 +887,34 @@ function generateNotifications(){
   if(rc!=null && rc>30){ addNotif({tipe:'utang',kunci:'dsr',prioritas:rc>40?'crit':'hi',emoji:'💳',judul:'Beban cicilan tinggi',
     pesan:`Cicilan ${R(cicilanBulanan())}/bln = ${Math.round(rc)}% penghasilan (batas aman umum 30%). Prioritaskan lunasi utang bunga tertinggi & tunda utang baru.`,
     aksi:[{l:'Lihat utang',t:'go',v:'tagihan'}]}); }
-  // 2) anggaran
   budgetRows(monthKey()).forEach(b=>{
     if(b.pct>=100){ addNotif({tipe:'anggaran',kunci:'bg-'+b.kategori_id,prioritas:'hi',emoji:'🚨',judul:'Anggaran '+b.kategori+' terlampaui',pesan:`Pengeluaran ${b.kategori} sudah ${Math.round(b.pct)}% dari anggaran ${R(b.batas)} bulan ini, melebihi batas ${R(b.spent-b.batas)}.`,aksi:[{l:'Lihat anggaran',t:'go',v:'anggaran'}]}); }
     else if(b.pct>=80){ const sisaHari=daysInMonthLeft(); addNotif({tipe:'anggaran',kunci:'bg-'+b.kategori_id,prioritas:'mid',emoji:'⚠️',judul:'Anggaran '+b.kategori+' hampir habis',pesan:`Pengeluaran ${b.kategori} sudah ${Math.round(b.pct)}% dari anggaran bulan ini, padahal masih ada ${sisaHari} hari tersisa.`,aksi:[{l:'Lihat anggaran',t:'go',v:'anggaran'}]}); }
   });
-  // 3) tagihan H-7,H-3,H-1, jatuh tempo
   billsUpcoming().forEach(b=>{
     const d=b.hari;
     if(d<=0){ addNotif({tipe:'tagihan',kunci:'bl-'+b.id,prioritas:'crit',emoji:'📅',judul:'Tagihan jatuh tempo hari ini',pesan:`${b.nama} ${R(b.jumlah)} jatuh tempo hari ini. Pastikan saldo mencukupi.`,aksi:[{l:'Tandai lunas',t:'paybill',v:b.id}]}); }
     else if(d===1||d===3||d===7){ addNotif({tipe:'tagihan',kunci:'bl-'+b.id+'-'+d,prioritas:d<=1?'crit':'hi',emoji:'📅',judul:'Tagihan mendekati jatuh tempo',pesan:`${b.nama} ${R(b.jumlah)} jatuh tempo dalam ${d} hari (${fmtDate(b.jatuh_tempo)}). Pastikan saldo mencukupi.`,aksi:[{l:'Lihat tagihan',t:'go',v:'tagihan'}]}); }
   });
-  // 4) utang jatuh tempo
   debtsActive().forEach(u=>{ const d=daysUntil(u.jatuh_tempo);
     if(d>=0&&d<=3){ addNotif({tipe:'utang',kunci:'ut-'+u.id+'-'+d,prioritas:d<=1?'crit':'hi',emoji:'💳',judul:'Cicilan jatuh tempo',pesan:`${u.nama}: cicilan ${R(u.cicilan)} jatuh tempo ${d===0?'hari ini':'dalam '+d+' hari'}. Sisa utang ${R(u.sisa)}.`,aksi:[{l:'Lihat utang',t:'go',v:'tagihan'}]}); }
   });
-  // 5) cashflow berisiko
   const cf=predictCashflow();
   if(cf.risk!=='aman'){
-    addNotif({tipe:'cashflow',kunci:'cf',prioritas:cf.risk==='Kritis'?'crit':'hi',emoji:cf.emoji,judul:'Cashflow Anda berisiko!',
+    addNotif({tipe:'cashflow',kunci:'cf',prioritas:cf.risk==='Kritis'?'crit':'hi',emoji:cf.emoji,judul:'Arus kas Anda berisiko!',
       pesan:`Saldo saat ini ${R(cf.saldo)}. Terdapat tagihan & cicilan ${R(cf.totalBills+cf.totalCicilan)} sebelum pemasukan berikutnya (${cf.daysLeft} hari lagi). Saldo diperkirakan ${R(cf.projSaldo)} sampai gajian.`,
       aksi:[{l:'Lihat detail',t:'go',v:'keamanan'}]});
   }
-  // 6) target tertinggal
   D().target.forEach(g=>{ const p=goalProgress(g);
     if(p.st==='tertinggal'){ addNotif({tipe:'target',kunci:'tg-'+g.id,prioritas:'mid',emoji:'🎯',judul:'Target "'+g.nama+'" tertinggal',pesan:`Target ${g.nama} baru ${p.pct}%. Untuk capai tepat waktu perlu setoran ${R(Math.round(p.ideal))}/bln, saat ini ${R(p.setoran)}/bln.`,aksi:[{l:'Lihat target',t:'go',v:'target'}]}); }
     else if(p.st==='terlewat'){ addNotif({tipe:'target',kunci:'tg-'+g.id,prioritas:'hi',emoji:'🎯',judul:'Target "'+g.nama+'" melebihi tenggat',pesan:`Target ${g.nama} seharusnya tercapai sudah. Progress ${p.pct}%, masih kurang ${R(p.sisa)}.`}); }
     else if(p.pct>=72 && p.pct<100){ addNotif({tipe:'target',kunci:'tg-'+g.id+'-72',prioritas:'lo',emoji:'🎯',judul:'Target "'+g.nama+'" hampir tercapai',pesan:`Target ${g.nama} sudah ${p.pct}%. Dengan setoran saat ini, diperkirakan tercapai dalam ${p.etaBulan} bulan.`}); }
   });
-  // 7) abnormal
   abnormalSpending().slice(0,2).forEach(a=>{ addNotif({tipe:'abnormal',kunci:'ab-'+a.kategori.id,prioritas:'mid',emoji:'📈',judul:'Pengeluaran '+a.kategori.nama+' meningkat',pesan:`Pengeluaran ${a.kategori.nama} bulan ini ${R(a.cur)}, ${a.pct}% di atas rata-rata 3 bulan terakhir (${R(a.avg)}).`}); });
-  // 8) gaji masuk (jika ada pemasukan >50% penghasilan bulan ini dan alokasi belum diatur)
   const mk=monthKey(); const gajiMasuk=trxByMonth(mk).filter(t=>t.tipe==='in' && KAT(t.kategori_id).nama==='Gaji');
   if(gajiMasuk.length && !D()._alokasiDone){ addNotif({tipe:'gaji',kunci:'gaji-'+mk,prioritas:'lo',emoji:'💰',judul:'Gaji sudah masuk',pesan:`Pemasukan tercatat ${R(gajiMasuk.reduce((a,t)=>a+(+t.jumlah||0),0))}. Gunakan rekomendasi alokasi untuk membagi gaji Anda.`,aksi:[{l:'Lihat alokasi',t:'go',v:'keamanan'}]}); }
-  // 9) tidak ada pencatatan (jika 3 hari tidak ada transaksi)
   const lastTrx=D().transaksi.filter(t=>t.tipe).sort((a,b)=>a.tgl<b.tgl?1:-1)[0];
   if(lastTrx){ const dd=daysUntil(lastTrx.tgl); if(dd<-3){ addNotif({tipe:'tidakCatat',kunci:'nc',prioritas:'lo',emoji:'📝',judul:'Sudah '+(-dd)+' hari tidak mencatat',pesan:'Catat transaksi terakhir Anda agar laporan tetap akurat.'}); } }
-
   persist();
 }
 function daysInMonthLeft(){
@@ -984,7 +922,6 @@ function daysInMonthLeft(){
   return last-now.getDate();
 }
 
-/* ===================== UTILITIES NOTIF ===================== */
 function unreadCount(){ return (D().notifikasi||[]).filter(n=>n.status==='new').length; }
 function markNotif(id, status){
   const n=(D().notifikasi||[]).find(x=>x.id===id); if(!n)return;
@@ -993,15 +930,15 @@ function markNotif(id, status){
   renderAll();
 }
 function clearNotif(id){ const arr=D().notifikasi; const i=arr.findIndex(x=>x.id===id); if(i>=0)arr.splice(i,1); persist(); pushQ({t:'notifikasi',op:'del',id}); renderAll(); }
-function clearAllNotif(){ if(!confirm('Hapus semua notifikasi?'))return; D().notifikasi=[]; persist(); pushQ({t:'notifikasi',op:'clear'}); renderAll(); }
+function clearAllNotif(){ if(!confirm('Hapus semua notifikasi?'))return; vibrate([20,40,20]); D().notifikasi=[]; persist(); pushQ({t:'notifikasi',op:'clear'}); renderAll(); }
 
 function toast(m,e){ const t=$('toast'); t.textContent=m; t.style.background=e===2?'#e8780a':e?'#d93b3b':'#0f9d6b'; t.hidden=0; clearTimeout(t._t); t._t=setTimeout(()=>t.hidden=1,2600); }
 /* ===================== NAVIGATION ===================== */
 const NAV = [
-  {id:'dash',l:'Dashboard',i:'<path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>'},
+  {id:'dash',l:'Beranda',i:'<path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>'},
   {id:'trx',l:'Transaksi',i:'<path d="M3 4h2l2.4 11h10.2L20 7H6.2"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/>'},
   {id:'anggaran',l:'Anggaran',i:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'},
-  {id:'keamanan',l:'Keamanan',i:'<path d="M12 3l8 3v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/>'},
+  {id:'keamanan',l:'Perencana',i:'<path d="M12 3l8 3v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/>'},
   {id:'target',l:'Target',i:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>'},
   {id:'tagihan',l:'Tagihan & Utang',i:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/>'},
   {id:'notif',l:'Notifikasi',i:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>'},
@@ -1011,31 +948,27 @@ const NAV = [
 const NAVBOT_IDS = ['dash','trx','anggaran','keamanan','more'];
 function buildNav(){
   const side=$('navSide'); const bot=$('navBot');
-  side.innerHTML = NAV.map(n=>`<a data-t="${n.id}" onclick="go('${n.id}')"><svg class="ic" viewBox="0 0 24 24">${n.i}</svg>${n.l}</a>`).join('');
-  // bottom nav: 4 utama + "More" (buka sheet menu)
-  const botItems=[{id:'dash',l:'Home',i:NAV[0].i},{id:'trx',l:'Transaksi',i:NAV[1].i},{id:'anggaran',l:'Anggaran',i:NAV[2].i},{id:'keamanan',l:'Aman',i:NAV[3].i}];
-  bot.innerHTML = `<div class="in">`+botItems.map(n=>`<a data-t="${n.id}" onclick="go('${n.id}')"><svg class="ic" viewBox="0 0 24 24">${n.i}</svg>${n.l}</a>`).join('')+`<a class="more" onclick="openMore()"><svg class="ic" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Lainnya</a>`+`</div>`;
+  side.innerHTML = NAV.map(n=>`<a data-t="${n.id}" onclick="vibrate(8);go('${n.id}')"><svg class="ic" viewBox="0 0 24 24">${n.i}</svg>${n.l}</a>`).join('');
+  const botItems=[{id:'dash',l:'Home',i:NAV[0].i},{id:'trx',l:'Transaksi',i:NAV[1].i},{id:'anggaran',l:'Anggaran',i:NAV[2].i},{id:'keamanan',l:'Perencana',i:NAV[3].i}];
+  bot.innerHTML = `<div class="in">`+botItems.map(n=>`<a data-t="${n.id}" onclick="vibrate(8);go('${n.id}')"><svg class="ic" viewBox="0 0 24 24">${n.i}</svg>${n.l}</a>`).join('')+`<a class="more" onclick="vibrate(8);openMore()"><svg class="ic" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Lainnya</a>`+`</div>`;
 }
 function go(tab){
   S.tab=tab;
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
   const el=$('v-'+tab); if(el) el.classList.add('on');
   document.querySelectorAll('.nav a,.navbot a').forEach(a=>a.classList.toggle('on', a.getAttribute('data-t')===tab));
-  // FAB hanya di view yang punya aksi tambah cepat
   const withFab=['dash','trx','anggaran','target','tagihan'];
   $('fab').hidden = !withFab.includes(tab);
   renderView(tab);
   window.scrollTo(0,0);
-  // label bulan
   const d=new Date(S.filterMonth+'-01'); $('monthLbl').textContent = (isNaN(d)?MONTHS[new Date().getMonth()]:MONTHS[d.getMonth()])+' '+((isNaN(d)?new Date():d).getFullYear());
 }
 function openMore(){
   openSheet('Menu lainnya', `<div class="col">`+
-    NAV.slice(4).map(n=>`<div class="hl" onclick="closeSheet();go('${n.id}')"><div class="ic-c"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" style="fill:none;stroke:var(--ink);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round">${n.i}</svg></div><div class="grow"><div class="nm">${n.l}</div></div><span style="color:var(--mut)">›</span></div>`).join('')+
+    NAV.slice(4).map(n=>`<div class="hl" onclick="closeSheet();vibrate(8);go('${n.id}')"><div class="ic-c"><svg class="ic" viewBox="0 0 24 24" width="20" height="20" style="fill:none;stroke:var(--ink);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round">${n.i}</svg></div><div class="grow"><div class="nm">${n.l}</div></div><span style="color:var(--mut)">›</span></div>`).join('')+
     `</div>`);
 }
 
-/* ===================== RENDER DISPATCH ===================== */
 function renderAll(){ renderView(S.tab); updateBell(); }
 function renderView(tab){
   const map={dash:renderDashboard,trx:renderTransaksi,anggaran:renderAnggaran,keamanan:renderKeamanan,target:renderTarget,tagihan:renderTagihanUtang,notif:renderNotifikasi,laporan:renderLaporan,pengaturan:renderPengaturan};
@@ -1045,7 +978,7 @@ function updateBell(){
   const c=unreadCount(); const b=$('bellBtn'); b.classList.toggle('has',c>0);
 }
 
-/* ===================== CHARTS (inline SVG) ===================== */
+/* ===================== CHARTS ===================== */
 function donut(segs, size=150, thick=24){
   const total=segs.reduce((a,s)=>a+(+s.val||0),0); const T=total||1;
   const r=(size-thick)/2, c=2*Math.PI*r, cx=size/2; let off=0, parts='';
@@ -1060,7 +993,6 @@ function ringSVG(pct, color, size=130, thick=14){
     <circle cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="${color}" stroke-width="${thick}" stroke-linecap="round" stroke-dasharray="${len.toFixed(2)} ${(c-len).toFixed(2)}" stroke-dashoffset="0" transform="rotate(-90 ${cx} ${cx})"/></svg>`;
 }
 function lineChart(series, w=320, h=140){
-  // series:[{label,val}]; max scaling
   const vals=series.map(s=>+s.val||0); const max=Math.max(1,...vals), min=Math.min(0,...vals);
   const pad=24, pw=w-pad*2, ph=h-pad-14;
   const pts=series.map((s,i)=>{ const x=pad+(series.length>1?i/(series.length-1)*pw:pw/2); const y=pad+ph-((s.val-min)/(max-min||1)*ph); return {x,y,...s}; });
@@ -1070,7 +1002,6 @@ function lineChart(series, w=320, h=140){
   return `<svg viewBox="0 0 ${w} ${h}" width="100%" style="max-width:${w}px">${bars}<path d="${path}" fill="none" stroke="#0f9d6b" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>${labs}</svg>`;
 }
 
-/* ===================== DASHBOARD ===================== */
 /* ===================== DASHBOARD ===================== */
 function renderDashboard(){
   const mk=monthKey(); const trxs=trxByMonth(mk);
@@ -1083,87 +1014,76 @@ function renderDashboard(){
   const punyaTrx=D().transaksi.length>0;
   const skorChip = hasData()?`<span class="chip ${h.cls}" style="margin-left:auto;flex-shrink:0">Skor ${h.total}</span>`:'';
 
-  // banner prioritas: cashflow kritis > dana darurat kritis > belum aman > cashflow berisiko > mulai pakai > aman
   let banner='';
-  if(!hasData()) banner=`<div class="banner b"><span class="em">👋</span><div>Selamat datang! Data masih <b>kosong</b> — mulai dengan isi <a href="#" onclick="openIncome();return false">penghasilan</a> &amp; <a href="#" onclick="openEmergency();return false">biaya hidup bulanan</a>, atau <a href="#" onclick="openAdd('out');return false">catat transaksi pertama</a>.</div></div>`;
-  else if(cf.risk==='Kritis') banner=`<div class="banner r"><span class="em">🆘</span><div>Cashflow berisiko! Saldo diperkirakan ${R(cf.projSaldo)} sampai gajian (${cf.daysLeft} hari). <a href="#" onclick="go('keamanan');return false">Lihat detail</a></div>${skorChip}</div>`;
-  else if(ef.beban>0&&ef.rasio<1) banner=`<div class="banner r"><span class="em">🆘</span><div>Dana darurat kritis — hanya ${ef.bulanTahan.toFixed(1)} bulan beban. Target minimum 3 bulan.</div>${skorChip}</div>`;
-  else if(ef.beban>0&&ef.rasio<3) banner=`<div class="banner a"><span class="em">🛡️</span><div>Dana darurat belum aman (${Math.min(100,ef.pctMin)}% target minimum). Cek rekomendasi di bawah.</div>${skorChip}</div>`;
-  else if(cf.risk==='Berisiko') banner=`<div class="banner a"><span class="em">⚠️</span><div>Saldo diperkirakan menipis sampai gajian. Pantau pengeluaran.</div>${skorChip}</div>`;
-  else if(!punyaTrx) banner=`<div class="banner b"><span class="em">✍️</span><div>Pengaturan tersimpan. Catat transaksi bulan ini agar laporan, skor &amp; rekomendasi akurat. <a href="#" onclick="openAdd('out');return false">Catat sekarang</a></div></div>`;
-  else banner=`<div class="banner g"><span class="em">✅</span><div>Keuangan terpantau — dana darurat aman ${ef.bulanTahan.toFixed(1)} bulan beban.</div>${skorChip}</div>`;
+  if(!hasData()) banner=`<div class="banner b"><span class="em">👋</span><div>Selamat datang! Mulai dari nol: isi <a href="#" onclick="vibrate(10);openIncome();return false">penghasilan</a> &amp; <a href="#" onclick="vibrate(10);openEmergency();return false">biaya hidup bulanan</a>, atau <a href="#" onclick="vibrate(15);openAdd('out');return false">catat transaksi pertama</a>.</div></div>`;
+  else if(cf.risk==='Kritis') banner=`<div class="banner r"><span class="em">🆘</span><div>Perhatian! Saldo diperkirakan minus ${R(cf.projSaldo)} sebelum gajian (${cf.daysLeft} hari lagi). <a href="#" onclick="vibrate(10);go('keamanan');return false">Lihat detail</a></div>${skorChip}</div>`;
+  else if(ef.beban>0&&ef.rasio<1) banner=`<div class="banner r"><span class="em">🆘</span><div>Dana darurat kritis — hanya cukup ${ef.bulanTahan.toFixed(1)} bulan. Idealnya minimal 3 bulan pengeluaran.</div>${skorChip}</div>`;
+  else if(ef.beban>0&&ef.rasio<3) banner=`<div class="banner a"><span class="em">🛡️</span><div>Dana darurat belum aman (${Math.min(100,ef.pctMin)}% dari target minimum 3 bulan).</div>${skorChip}</div>`;
+  else if(cf.risk==='Berisiko') banner=`<div class="banner a"><span class="em">⚠️</span><div>Saldo diperkirakan menipis sampai gajian. Kurangi pengeluaran tidak penting.</div>${skorChip}</div>`;
+  else if(!punyaTrx) banner=`<div class="banner b"><span class="em">✍️</span><div>Pengaturan tersimpan. Catat transaksi bulan ini agar laporan &amp; skor akurat. <a href="#" onclick="vibrate(15);openAdd('out');return false">Catat sekarang</a></div></div>`;
+  else banner=`<div class="banner g"><span class="em">✅</span><div>Keuangan terpantau — dana darurat aman ${ef.bulanTahan.toFixed(1)} bulan pengeluaran.</div>${skorChip}</div>`;
 
-  const rasioTxt = rc!=null ? `${rc.toFixed(0)}% penghasilan · ${rcs.l}` : 'isi penghasilan untuk rasio';
+  const rasioTxt = rc!=null ? `${rc.toFixed(0)}% penghasilan · ${rcs.l}` : 'isi penghasilan untuk lihat rasio';
   const hintRek = ef.beban===0
-    ? `Belum ada data. Isi <b>biaya hidup bulanan</b> (⚙️) & <b>penghasilan</b> (✏️) — target dana darurat & rekomendasi setoran akan dihitung otomatis setelahnya.`
+    ? `<b>Belum ada data.</b> Isi <b>biaya hidup bulanan</b> (⚙️) &amp; <b>penghasilan</b> (✏️) — target dana darurat &amp; rekomendasi setoran akan dihitung otomatis. <i>Dana darurat = uang cadangan untuk kebutuhan darurat (sakit, PHK, dll).</i>`
     : (rk.sisaIdeal<=0
-    ? `<b>Ideal sudah tercapai!</b> Dana darurat ${R(ef.dana)} ≥ 6 × beban ${R(ef.beban)}/bln. Pertahankan — target ketahanan tinggi 12 bulan = ${R(ef.max)}.`
+    ? `<b>Ideal sudah tercapai!</b> Dana darurat ${R(ef.dana)} ≥ 6 × pengeluaran ${R(ef.beban)}/bln. Pertahankan — target ketahanan tinggi 12 bulan = ${R(ef.max)}.`
     : (rk.saran>0
-      ? `Target ideal <b>${R(ef.ideal)}</b> = 6 × (biaya hidup ${R(ef.biaya)} + cicilan ${R(cicilan)})${rk.inc.v>0?` ≈ ${(ef.ideal/rk.inc.v).toFixed(1)} × penghasilan`:''}. Sisihkan <b>${R(rk.saran)}/bln</b>${rk.inc.v>0?` (${Math.round(rk.saran/rk.inc.v*100)}% penghasilan)`:''} → ideal tercapai ±<b>${rk.etaBulan} bulan</b> (${rk.etaTgl}).`
+      ? `Target ideal <b>${R(ef.ideal)}</b> = 6 × (biaya hidup ${R(ef.biaya)} + cicilan ${R(cicilan)})${rk.inc.v>0?` ≈ ${(ef.ideal/rk.inc.v).toFixed(1)} × penghasilan`:''}. Sisihkan <b>${R(rk.saran)}/bln</b>${rk.inc.v>0?` (${Math.round(rk.saran/rk.inc.v*100)}% penghasilan)`:''} → tercapai ±<b>${rk.etaBulan} bulan</b> (${rk.etaTgl}).`
       : (rk.inc.v>0
-        ? `<b>⚠️ Penghasilan ≤ beban bulanan</b> (${R(rk.inc.v)} vs ${R(ef.beban)}) — sulit menabung dana darurat. Tekan pengeluaran rutin atau lunasi utang bunga tertinggi dulu.`
-        : `Target ideal <b>${R(ef.ideal)}</b> = 6 × (biaya hidup ${R(ef.biaya)} + cicilan ${R(cicilan)}). Isi penghasilan (tombol ✏️ di bawah) agar rekomendasi setoran bulanan muncul.`)));
+        ? `<b>⚠️ Penghasilan ≤ pengeluaran rutin</b> (${R(rk.inc.v)} vs ${R(ef.beban)}) — sulit menabung. Tekan pengeluaran atau lunasi utang bunga tertinggi dulu.`
+        : `Target ideal <b>${R(ef.ideal)}</b> = 6 × (biaya hidup ${R(ef.biaya)} + cicilan ${R(cicilan)}). Isi penghasilan (✏️) agar rekomendasi setoran muncul.`)));
 
   $('v-dash').innerHTML = `
   ${banner}
 
-  <div class="card">
-    <h3>💡 Rekomendasi Keuangan ${ef.beban===0?'<span class="chip a">Belum diisi</span>':`<span class="chip ${ef.cls}">DD ${ef.status}</span>`} <a class="ml" href="#" onclick="go('keamanan');return false">Detail</a></h3>
+  <div class="card hoverable">
+    <h3>💡 Rekomendasi Keuangan ${ef.beban===0?'<span class="chip a">Belum diisi</span>':`<span class="chip ${ef.cls}">Dana Darurat ${ef.status}</span>`} <button class="info" title="Dana darurat = uang cadangan untuk keadaan genting (PHK, sakit, kebutuhan mendadak). Target ideal = 6 × pengeluaran bulanan.">?</button> <a class="ml" href="#" onclick="vibrate(10);go('keamanan');return false">Detail</a></h3>
     <div class="rec">
       <div class="rc"><div class="lbl">Penghasilan / bulan</div><div class="v">${R(rk.inc.v)}</div><div class="sb">${rk.inc.src==='pengaturan'?'sesuai pengaturan':rk.inc.src==='estimasi'?'estimasi dari transaksi':'belum diatur — ketuk ✏️'}</div></div>
       <div class="rc"><div class="lbl">Cicilan / bulan</div><div class="v">${R(cicilan)}</div><div class="sb">${nUtang?nUtang+' utang aktif':'belum ada utang'} · ${rasioTxt}</div></div>
       <div class="rc"><div class="lbl">Biaya hidup / bulan</div><div class="v">${R(ef.biaya)}</div><div class="sb">${ef.biaya>0?'kebutuhan pokok':'belum diisi — ketuk ⚙️'}</div></div>
-      <div class="rc hl-g"><div class="lbl">Beban bulanan</div><div class="v">${R(ef.beban)}</div><div class="sb">biaya hidup + cicilan</div></div>
+      <div class="rc hl-g"><div class="lbl">Total beban / bulan</div><div class="v">${R(ef.beban)}</div><div class="sb">biaya hidup + cicilan</div></div>
     </div>
     ${ef.beban>0?`<div class="bar-row" style="margin-top:12px;margin-bottom:0">
       <div class="top"><span class="nm">🛡️ Dana darurat saat ini</span><span class="v">${R(ef.dana)} <span class="muted xs">/ ideal ${R(ef.ideal)}</span></span></div>
       <div class="prog"><div class="f ${ef.cls}" style="width:${Math.min(100,ef.pctIdeal)}%"></div></div>
-      <div class="between xs" style="margin-top:4px;gap:8px"><span class="muted">${Math.min(100,ef.pctIdeal)}% dari ideal · ${ef.bulanTahan.toFixed(1)} bulan beban</span><span class="muted">${rk.sisaIdeal>0?'kurang '+R(rk.sisaIdeal):'ideal tercapai 🎉'}</span></div>
+      <div class="between xs" style="margin-top:4px;gap:8px"><span class="muted">${Math.min(100,ef.pctIdeal)}% dari ideal · tahan ${ef.bulanTahan.toFixed(1)} bulan</span><span class="muted">${rk.sisaIdeal>0?'· kurang '+R(rk.sisaIdeal):'· ideal tercapai 🎉'}</span></div>
     </div>`:`<div class="hint" style="margin-top:12px;margin-bottom:0">Dana darurat saat ini <b>${R(ef.dana)}</b> — target akan dihitung setelah biaya hidup bulanan diisi.</div>`}
     <div class="hint" style="margin-top:10px">
       ${hintRek}
-      ${rk.sisaIdeal>0?`<div style="margin-top:4px">Target minimum 3 bulan beban = ${R(ef.min)}${rk.sisaMin>0?` (kurang ${R(rk.sisaMin)})`:' — sudah tercapai ✓'}.</div>`:''}
+      ${rk.sisaIdeal>0?`<div style="margin-top:4px">Target minimum 3 bulan = ${R(ef.min)}${rk.sisaMin>0?` (kurang ${R(rk.sisaMin)})`:' — sudah tercapai ✓'}.</div>`:''}
     </div>
     <div class="row wrap-flex" style="margin-top:10px">
-      <button class="btn sm grow" onclick="quickDepositDD()">🛡️ Setor dana darurat</button>
-      <button class="btn ghost sm" onclick="openIncome()">✏️ Penghasilan</button>
-      <button class="btn ghost sm" onclick="openEmergency()">⚙️ Biaya hidup</button>
+      <button class="btn sm grow" onclick="vibrate(15);quickDepositDD()">🛡️ Setor dana darurat</button>
+      <button class="btn ghost sm" onclick="vibrate(10);openIncome()">✏️ Penghasilan</button>
+      <button class="btn ghost sm" onclick="vibrate(10);openEmergency()">⚙️ Biaya hidup</button>
     </div>
   </div>
 
-  <div class="card">
-    <h3><svg class="ic" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l3-4 3 3 4-6"/></svg> Ringkasan ${MONTHS[new Date().getMonth()]} <a class="ml" href="#" onclick="go('laporan');return false">Laporan</a></h3>
+  <div class="card hoverable">
+    <h3><svg class="ic" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l3-4 3 3 4-6"/></svg> Ringkasan ${MONTHS[new Date().getMonth()]} <a class="ml" href="#" onclick="vibrate(10);go('laporan');return false">Laporan</a></h3>
     <div class="kpi">
-      <div class="b in"><div class="lbl">↘ Pemasukan</div><div class="v">${R(inT)}</div></div>
-      <div class="b out"><div class="lbl">↗ Pengeluaran</div><div class="v">${R(outT)}</div></div>
-      <div class="b bal"><div class="lbl">⚖ Saldo total</div><div class="v">${R(saldo)}</div></div>
+      <div class="b in"><div class="lbl">↘ Pemasukan <button class="info" title="Uang yang masuk (gaji, bonus, dll)">?</button></div><div class="v">${R(inT)}</div></div>
+      <div class="b out"><div class="lbl">↗ Pengeluaran <button class="info" title="Uang yang keluar (makan, belanja, dll)">?</button></div><div class="v">${R(outT)}</div></div>
+      <div class="b bal"><div class="lbl">⚖ Saldo total <button class="info" title="Saldo = jumlah uang di semua rekening">?</button></div><div class="v">${R(saldo)}</div></div>
       <div class="b"><div class="lbl">🛡️ Dana darurat</div><div class="v">${R(ef.dana)}</div></div>
     </div>
     ${(!inT&&!outT)?'<div class="muted xs" style="margin-top:8px">Belum ada transaksi bulan ini — ketuk tombol ➕ untuk mencatat.</div>':''}
   </div>
 
-  <div class="card">
-    <h3>⚠️ Peringatan <a class="ml" href="#" onclick="go('notif');return false">Semua notifikasi</a></h3>
-    ${bills.length?bills.map(b=>`<div class="li"><div class="ic-c" style="background:var(--amber-l)">📅</div><div class="grow"><div class="nm">${E(b.nama)}</div><div class="sb">${b.hari<=0?'Jatuh tempo hari ini':'Dalam '+b.hari+' hari · '+fmtDateShort(b.jatuh_tempo)}</div></div><div class="v">${R(b.jumlah)}</div></div>`).join(''):''}
-    ${ef.beban>0&&ef.rasio<3?`<div class="li"><div class="ic-c" style="background:var(--red-l)">🛡️</div><div class="grow"><div class="nm">Dana darurat belum ideal</div><div class="sb">kurang ${R(rk.sisaIdeal)} dari ${R(ef.ideal)} · setor ${R(rk.saran>0?rk.saran:500000)}/bln</div></div></div>`:''}
-    ${rc!=null&&rc>30?`<div class="li"><div class="ic-c" style="background:var(--red-l)">💳</div><div class="grow"><div class="nm">Beban cicilan ${rc.toFixed(0)}% penghasilan</div><div class="sb">di atas batas aman 30% · prioritas lunasi utang bunga tinggi</div></div></div>`:''}
-    ${bgWarn.map(b=>`<div class="li"><div class="ic-c" style="background:var(--amber-l)">${b.ikon}</div><div class="grow"><div class="nm">Anggaran ${E(b.kategori)} ${b.pct>=100?'terlampaui':'hampir habis'}</div><div class="sb">${Math.round(b.pct)}% terpakai · sisa ${R(Math.max(0,b.sisa))}</div></div></div>`).join('')}
-    ${(!bills.length && ef.rasio>=3 && !(rc!=null&&rc>30) && !bgWarn.length)?'<div class="empty xs">Tidak ada peringatan aktif ✨</div>':''}
-  </div>
-
-  <div class="card">
+  <div class="card hoverable">
     <h3>⚡ Akses Cepat</h3>
     <div class="qa">
-      <a onclick="openAdd('in')"><div class="c"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>Pemasukan</a>
-      <a onclick="openAdd('out')"><div class="c"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>Pengeluaran</a>
-      <a onclick="openAdd('transfer')"><div class="c"><svg class="ic" viewBox="0 0 24 24"><path d="M7 7h13M17 4l3 3-3 3M17 17H4M7 20l-3-3 3-3"/></svg></div>Transfer</a>
-      <a onclick="openAdd('bill')"><div class="c"><svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>Tagihan</a>
-      <a onclick="openAdd('goal')"><div class="c"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div>Target</a>
+      <a onclick="vibrate(12);openAdd('in')"><div class="c"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>Pemasukan</a>
+      <a onclick="vibrate(12);openAdd('out')"><div class="c"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>Pengeluaran</a>
+      <a onclick="vibrate(12);openAdd('transfer')"><div class="c"><svg class="ic" viewBox="0 0 24 24"><path d="M7 7h13M17 4l3 3-3 3M17 17H4M7 20l-3-3 3-3"/></svg></div>Transfer</a>
+      <a onclick="vibrate(12);openAdd('bill')"><div class="c"><svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>Tagihan</a>
+      <a onclick="vibrate(12);openAdd('goal')"><div class="c"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div>Target</a>
     </div>
   </div>`;
 }
 
-/* ===================== TRANSAKSI ===================== */
 function renderTransaksi(){
   const mk=S.filterMonth;
   let trxs=D().transaksi.slice().sort((a,b)=>a.tgl<b.tgl?1:-1);
@@ -1181,7 +1101,7 @@ function renderTransaksi(){
       <select id="_trxMonth" onchange="S.filterMonth=this.value;renderTransaksi()" class="grow" style="padding:9px;border-radius:10px;border:1px solid var(--line)">${monthOpts.map(m=>`<option value="${m.v}" ${m.v===mk?'selected':''}>${m.l}</option>`).join('')}</select>
     </div>
     <div class="tabs" style="margin:0">
-      ${['all|Semua','in|Masuk','out|Keluar','transfer|Transfer'].map(x=>{const[v,l]=x.split('|');return `<button class="${filterTipe===v?'on':''}" onclick="setVal('_trxFilterTipe','${v}');renderTransaksi()">${l}</button>`}).join('')}
+      ${['all|Semua','in|Masuk','out|Keluar','transfer|Transfer'].map(x=>{const[v,l]=x.split('|');return `<button class="${filterTipe===v?'on':''}" onclick="vibrate(8);setVal('_trxFilterTipe','${v}');renderTransaksi()">${l}</button>`}).join('')}
     </div>
     <input type="hidden" id="_trxFilterTipe" value="${filterTipe}">
     <input type="hidden" id="_trxFilterKat" value="${filterKat}">
@@ -1199,34 +1119,30 @@ function monthOptions(){
   return opts;
 }
 
-/* ===================== ANGGARAN ===================== */
 function renderAnggaran(){
   const mk=S.filterMonth; const rows=budgetRows(mk);
   const totalBats=rows.reduce((a,b)=>a+(+b.batas||0),0);
   const totalSpent=rows.reduce((a,b)=>a+(+b.spent||0),0);
   const pctAll=totalBats>0?Math.round(totalSpent/totalBats*100):0;
   $('v-anggaran').innerHTML=`
-  <div class="hdr">Anggaran<div class="sub">${MONTHS[new Date(mk+'-01').getMonth()]} ${new Date(mk+'-01').getFullYear()}</div></div>
+  <div class="hdr">Anggaran <button class="info" style="vertical-align:middle;margin-left:6px" title="Anggaran = batas pengeluaran yang Anda tentukan per kategori, supaya tidak boros.">?</button><div class="sub">${MONTHS[new Date(mk+'-01').getMonth()]} ${new Date(mk+'-01').getFullYear()}</div></div>
   <div class="card">
     <div class="between" style="margin-bottom:8px"><div><div class="muted xs">Total terpakai</div><div class="big">${R(totalSpent)}</div></div><div style="text-align:right"><div class="muted xs">dari anggaran</div><div class="big sm2">${R(totalBats)}</div></div></div>
     <div class="prog"><div class="f ${pctAll>=100?'r':pctAll>=80?'a':''}" style="width:${Math.min(100,pctAll)}%"></div></div>
     <div class="muted xs" style="margin-top:6px;text-align:right">${pctAll}% terpakai · sisa ${R(Math.max(0,totalBats-totalSpent))}</div>
   </div>
   <div class="card">
-    <h3>Kategori & Batas <a class="ml" href="#" onclick="openAdd('budget');return false">+ Anggaran</a></h3>
+    <h3>Kategori &amp; Batas <a class="ml" href="#" onclick="vibrate(15);openAdd('budget');return false">+ Anggaran</a></h3>
     ${rows.length?rows.map(b=>`<div class="bar-row"><div class="top"><span class="nm"><span class="tag-dot" style="background:${b.warna}"></span>${b.ikon} ${E(b.kategori)}</span><span class="v">${R(b.spent)} / ${R(b.batas)}</span></div><div class="prog"><div class="f ${b.cls}" style="width:${Math.min(100,b.pct)}%"></div></div><div class="between xs" style="margin-top:4px"><span class="chip ${b.cls}">${b.st}</span><span class="muted">${Math.round(b.pct)}% · sisa ${R(Math.max(0,b.sisa))}</span></div></div>`).join('')
       :`<div class="empty"><svg class="ic" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Belum ada anggaran.<br>Ketuk "+ Anggaran" untuk membuat.</div>`}
   </div>`;
 }
 
-/* ===================== KEAMANAN KEUANGAN ===================== */
-/* ===================== PERENCANA KEUANGAN ===================== */
 function renderKeamanan(){
   const h=calcHealth(); const ef=calcEmergency(); const cf=predictCashflow(); const alo=recommendAllocation();
   const rk=rekomDanaDarurat(); const rc=rasioCicilan(); const rcs=rasioCicilanStatus();
   const set=D().pengaturan; const income=rk.inc.v;
   const cicilan=cicilanBulanan(); const nUtang=debtsActive().length;
-  // rekomendasi teks
   let recs=[];
   if(ef.rasio<6) recs.push(`Tambah dana darurat ${R(rk.saran>0?rk.saran:500000)}/bln menuju target ideal ${R(ef.ideal)} = 6 × (biaya hidup ${R(ef.biaya)} + cicilan ${R(cicilan)}).`);
   if(rc!=null&&rc>30) recs.push(`Rasio cicilan ${rc.toFixed(0)}% penghasilan — di atas batas aman 30%. Prioritaskan lunasi utang bunga tertinggi.`);
@@ -1237,7 +1153,7 @@ function renderKeamanan(){
   <div class="hdr">Perencana Keuangan<div class="sub">Skor kesehatan, target dana darurat &amp; rekomendasi dari penghasilan Anda</div></div>
 
   <div class="card">
-    <h3>Skor Kesehatan Keuangan</h3>
+    <h3>Skor Kesehatan Keuangan <button class="info" title="Skor 0-100 yang menunjukkan kondisi keuangan Anda. 80+ = sehat, &lt;40 = berisiko. Indikator internal, bukan penilaian bank.">?</button></h3>
     <div class="row" style="gap:16px">
       <div class="ring">${ringSVG(h.total, h.cls==='g'?'#0f9d6b':h.cls==='a'?'#e8780a':'#d93b3b')}<div class="ctr"><div><div class="n">${hasData()?h.total:'—'}</div><div class="l">${hasData()?'dari 100':'belum ada data'}</div></div></div></div>
       <div class="grow">
@@ -1251,36 +1167,36 @@ function renderKeamanan(){
   </div>
 
   <div class="card">
-    <h3>🛡️ Dana Darurat ${ef.beban===0?'<span class="chip a">Belum diisi</span>':`<span class="chip ${ef.cls}">${ef.status}</span>`} <a class="ml" href="#" onclick="openEmergency();return false">Atur</a></h3>
+    <h3>🛡️ Dana Darurat <button class="info" title="Uang cadangan untuk keadaan darurat (PHK, sakit, kebutuhan mendadak). Target ideal = 6 × pengeluaran bulanan.">?</button> ${ef.beban===0?'<span class="chip a">Belum diisi</span>':`<span class="chip ${ef.cls}">${ef.status}</span>`} <a class="ml" href="#" onclick="vibrate(10);openEmergency();return false">Atur</a></h3>
     <div class="between" style="margin-bottom:6px"><div><div class="muted xs">Dana darurat saat ini</div><div class="lg-num" style="color:var(--pri)">${R(ef.dana)}</div></div><div style="text-align:right"><div class="muted xs">Beban bulanan (hidup + cicilan)</div><div class="big sm2">${R(ef.beban)}</div></div></div>
-    ${ef.beban>0?`<div class="banner ${ef.cls}" style="margin-top:4px"><span class="em">${ef.emoji}</span><div>Status: <b>${ef.status}</b> — cadangan ${ef.bulanTahan.toFixed(1)} bulan beban bulanan</div></div>`:`<div class="banner a" style="margin-top:4px"><span class="em">🛡️</span><div>Belum diisi — tambahkan kebutuhan pokok bulanan untuk menghitung target.</div></div>`}
-    ${ef.beban>0?`<div class="bar-row" style="margin-top:10px"><div class="top"><span class="nm">Menuju target ideal (6 bln beban)</span><span class="v">${Math.min(100,ef.pctIdeal)}%</span></div><div class="prog"><div class="f ${ef.cls}" style="width:${Math.min(100,ef.pctIdeal)}%"></div></div><div class="muted xs" style="margin-top:4px">Ideal ${R(ef.ideal)} · kurang ${R(ef.sisaIdeal)}</div></div>`:`<div class="hint" style="margin-top:10px">Target ideal = 6 × beban bulanan — akan muncul setelah kebutuhan pokok diisi.</div>`}
+    ${ef.beban>0?`<div class="banner ${ef.cls}" style="margin-top:4px"><span class="em">${ef.emoji}</span><div>Status: <b>${ef.status}</b> — cukup tahan ${ef.bulanTahan.toFixed(1)} bulan tanpa pemasukan</div></div>`:`<div class="banner a" style="margin-top:4px"><span class="em">🛡️</span><div>Belum diisi — tambahkan kebutuhan pokok bulanan untuk menghitung target.</div></div>`}
+    ${ef.beban>0?`<div class="bar-row" style="margin-top:10px"><div class="top"><span class="nm">Menuju target ideal (6 bln)</span><span class="v">${Math.min(100,ef.pctIdeal)}%</span></div><div class="prog"><div class="f ${ef.cls}" style="width:${Math.min(100,ef.pctIdeal)}%"></div></div><div class="muted xs" style="margin-top:4px">Ideal ${R(ef.ideal)} · kurang ${R(ef.sisaIdeal)}</div></div>`:`<div class="hint" style="margin-top:10px">Target ideal = 6 × beban bulanan — akan muncul setelah kebutuhan pokok diisi.</div>`}
     <div class="rec" style="margin-top:8px">
       <div class="rc"><div class="lbl">Biaya hidup pokok/bln</div><div class="v">${R(ef.biaya)}</div><div class="sb">dari daftar kebutuhan</div></div>
       <div class="rc"><div class="lbl">Cicilan utang/bln</div><div class="v">${R(cicilan)}</div><div class="sb">${nUtang} utang aktif</div></div>
-      <div class="rc"><div class="lbl">Target minimum (3 bln)</div><div class="v">${ef.beban>0?R(ef.min):'—'}</div><div class="sb">${ef.beban>0?(ef.dana>=ef.min?'sudah tercapai ✓':'kurang '+R(Math.max(0,ef.min-ef.dana))):'isi biaya hidup dulu'}</div></div>
-      <div class="rc hl-g"><div class="lbl">Target ideal (6 bln)</div><div class="v">${ef.beban>0?R(ef.ideal):'—'}</div><div class="sb">${ef.beban>0?(ef.dana>=ef.ideal?'sudah tercapai 🎉':'kurang '+R(ef.sisaIdeal)):'isi biaya hidup dulu'}</div></div>
+      <div class="rc"><div class="lbl">Target minimum (3 bln)</div><div class="v">${ef.beban>0?R(ef.min):'—'}</div><div class="sb">${ef.beban>0?(ef.dana>=ef.min?'tercapai ✓':'kurang '+R(Math.max(0,ef.min-ef.dana))):'isi biaya hidup dulu'}</div></div>
+      <div class="rc hl-g"><div class="lbl">Target ideal (6 bln)</div><div class="v">${ef.beban>0?R(ef.ideal):'—'}</div><div class="sb">${ef.beban>0?(ef.dana>=ef.ideal?'tercapai 🎉':'kurang '+R(ef.sisaIdeal)):'isi biaya hidup dulu'}</div></div>
     </div>
-    <div class="hint" style="margin-top:10px"><b>Rekomendasi:</b> ${ef.beban===0?`Belum ada data — isi biaya hidup bulanan (⚙️ Atur) & penghasilan agar rekomendasi setoran muncul.`:(rk.sisaIdeal<=0?`target ideal sudah tercapai — pertahankan, target ketahanan tinggi 12 bln = ${R(ef.max)}.`:`sisihkan <b>${R(rk.saran>0?rk.saran:500000)}/bln</b>${rk.inc.v>0?` (${Math.round(rk.saran/rk.inc.v*100)}% penghasilan)`:''} → ideal tercapai ±<b>${rk.etaBulan!=null?rk.etaBulan:'…'} bulan</b>${rk.etaTgl?` (${rk.etaTgl})`:''}.`)}</div>
+    <div class="hint" style="margin-top:10px"><b>Rekomendasi:</b> ${ef.beban===0?`Belum ada data — isi biaya hidup bulanan (⚙️ Atur) & penghasilan agar rekomendasi setoran muncul.`:(rk.sisaIdeal<=0?`target ideal sudah tercapai — pertahankan, target ketahanan tinggi 12 bln = ${R(ef.max)}.`:`sisihkan <b>${R(rk.saran>0?rk.saran:500000)}/bln</b>${rk.inc.v>0?` (${Math.round(rk.saran/rk.inc.v*100)}% penghasilan)`:''} → tercapai ±<b>${rk.etaBulan!=null?rk.etaBulan:'…'} bulan</b>${rk.etaTgl?` (${rk.etaTgl})`:''}.`)}</div>
     <div class="row wrap-flex" style="margin-top:10px">
-      <button class="btn sm grow" onclick="quickDepositDD()">🛡️ Setor dana darurat</button>
-      <button class="btn ghost sm" onclick="openIncome()">✏️ Penghasilan</button>
+      <button class="btn sm grow" onclick="vibrate(15);quickDepositDD()">🛡️ Setor dana darurat</button>
+      <button class="btn ghost sm" onclick="vibrate(10);openIncome()">✏️ Penghasilan</button>
     </div>
   </div>
 
   <div class="card">
-    <h3>💳 Cicilan vs Penghasilan <a class="ml" href="#" onclick="openIncome();return false">Atur penghasilan</a></h3>
+    <h3>💳 Cicilan vs Penghasilan <a class="ml" href="#" onclick="vibrate(10);openIncome();return false">Atur penghasilan</a></h3>
     <div class="rec">
       <div class="rc"><div class="lbl">Penghasilan / bulan</div><div class="v">${R(income)}</div><div class="sb">${rk.inc.src==='pengaturan'?'sesuai pengaturan':rk.inc.src==='estimasi'?'estimasi transaksi 3 bln terakhir':'belum diatur — ketuk Atur'}</div></div>
       <div class="rc"><div class="lbl">Cicilan / bulan</div><div class="v">${R(cicilan)}</div><div class="sb">${nUtang} utang aktif · sisa total ${R(debtsActive().reduce((a,u)=>a+(+u.sisa||0),0))}</div></div>
     </div>
-    ${rc!=null?`<div class="bar-row" style="margin-top:10px"><div class="top"><span class="nm">Rasio cicilan terhadap penghasilan</span><span class="v">${rc.toFixed(1)}%</span></div><div class="prog"><div class="f ${rc<=30?'':rc<=40?'a':'r'}" style="width:${Math.min(100,rc/40*100)}%"></div></div><div class="between xs" style="margin-top:4px;gap:8px"><span class="chip ${rcs.cls}">${rcs.l} — batas aman umum 30%</span><span class="muted">${rc<=30?`ruang cicilan baru ${R(Math.max(0,income*0.3-cicilan))}/bln`:'tunda utang baru, lunasi bunga tinggi'}</span></div></div>`
+    ${rc!=null?`<div class="bar-row" style="margin-top:10px"><div class="top"><span class="nm">Rasio cicilan terhadap penghasilan <button class="info" title="Rasio cicilan = cicilan per bulan ÷ penghasilan per bulan. Batas aman umum 30%, waspada 30-40%, berisiko >40%.">?</button></span><span class="v">${rc.toFixed(1)}%</span></div><div class="prog"><div class="f ${rc<=30?'':rc<=40?'a':'r'}" style="width:${Math.min(100,rc/40*100)}%"></div></div><div class="between xs" style="margin-top:4px;gap:8px"><span class="chip ${rcs.cls}">${rcs.l} — batas aman umum 30%</span><span class="muted">${rc<=30?`ruang cicilan baru ${R(Math.max(0,income*0.3-cicilan))}/bln`:'tunda utang baru, lunasi bunga tinggi'}</span></div></div>`
     :`<div class="hint" style="margin-top:10px">Isi penghasilan bulanan agar rasio cicilan &amp; rekomendasi dana darurat lebih akurat.</div>`}
   </div>
 
   <div class="card">
-    <h3>🔮 Prediksi Cashflow <a class="ml" href="#" onclick="go('tagihan');return false">Tagihan</a></h3>
-    <div class="banner ${cf.cls}"><span class="em">${cf.emoji}</span><div><b>${cf.risk}</b> — saldo proyeksi ${R(cf.projSaldo)} sampai gajian berikutnya (${cf.daysLeft} hari lagi, ${fmtDateShort(cf.nextIn.toISOString().slice(0,10))}).</div></div>
+    <h3>🔮 Prediksi Saldo <a class="ml" href="#" onclick="vibrate(10);go('tagihan');return false">Tagihan</a></h3>
+    <div class="banner ${cf.cls}"><span class="em">${cf.emoji}</span><div><b>${cf.risk}</b> — saldo diperkirakan ${R(cf.projSaldo)} sampai gajian berikutnya (${cf.daysLeft} hari lagi, ${fmtDateShort(cf.nextIn.toISOString().slice(0,10))}).</div></div>
     <div class="grid2" style="margin-top:8px">
       <div class="hl"><div class="ic-c">💰</div><div><div class="nm">${R(cf.saldo)}</div><div class="sb">Saldo saat ini</div></div></div>
       <div class="hl"><div class="ic-c">📅</div><div><div class="nm">${cf.daysLeft} hari</div><div class="sb">Sampai gajian</div></div></div>
@@ -1291,22 +1207,22 @@ function renderKeamanan(){
   </div>
 
   <div class="card">
-    <h3>💰 Rekomendasi Alokasi Penghasilan <a class="ml" href="#" onclick="openAlokasi();return false">Atur</a></h3>
+    <h3>💰 Rekomendasi Alokasi Penghasilan <button class="info" title="Cara membagi gaji Anda: berapa persen untuk kebutuhan, tabungan, investasi, hiburan, dana bebas.">?</button> <a class="ml" href="#" onclick="vibrate(10);openAlokasi();return false">Atur</a></h3>
     <div class="muted xs" style="margin-bottom:6px">Berdasarkan penghasilan ${R(income)}/bln · disesuaikan otomatis dengan kondisi utang &amp; dana darurat.</div>
     <div class="alo-bar">${[['kebutuhan','#2f6fd6'],['tabungan','#0f9d6b'],['investasi','#34d399'],['hiburan','#e8780a'],['bebas','#a855f7']].map(([k,c])=>{const v=alokasiVal(alo,k);return `<div style="width:${v}%;background:${c}" title="${k} ${v}%">${v>=10?v+'%':''}</div>`}).join('')}</div>
     <table class="alo-tbl"><thead><tr><th>Alokasi</th><th>%</th><th class="r">Jumlah</th></tr></thead><tbody>
     ${[['kebutuhan','Kebutuhan'],['tabungan','Tabungan & dana darurat'],['investasi','Investasi'],['hiburan','Keinginan & hiburan'],['bebas','Dana bebas']].map(([k,l])=>{const v=alokasiVal(alo,k);return `<tr><td>${l}</td><td>${v}%</td><td class="r">${R(income*v/100)}</td></tr>`}).join('')}
     </tbody></table>
-    ${(JSON.stringify(alo)!==JSON.stringify(set.alokasi))?`<div class="hint"><b>Saran adaptif:</b> Sistem menyesuaikan alokasi karena ${h.debtRatio>0.3?'beban utang tinggi':''}${h.debtRatio>0.3&&ef.rasio<3?' & ':''}${ef.rasio<3?'dana darurat belum aman':''}. <a href="#" onclick="applyAlokasi('${JSON.stringify(alo).replace(/'/g,"\'")}');return false">Terapkan saran</a></div>`:''}
+    ${(JSON.stringify(alo)!==JSON.stringify(set.alokasi))?`<div class="hint"><b>Saran adaptif:</b> Sistem menyesuaikan alokasi karena ${h.debtRatio>0.3?'beban utang tinggi':''}${h.debtRatio>0.3&&ef.rasio<3?' & ':''}${ef.rasio<3?'dana darurat belum aman':''}. <a href="#" onclick="vibrate(15);applyAlokasi('${JSON.stringify(alo).replace(/'/g,"\'")}');return false">Terapkan saran</a></div>`:''}
   </div>`;
-}function alokasiVal(alo,k){ return Math.round(alo[k]||0); }
-function applyAlokasi(json){ try{ D().pengaturan.alokasi=JSON.parse(json); savePengaturan(); toast('Alokasi saran diterapkan'); }catch(e){toast('Gagal',1);} }
+}
+function alokasiVal(alo,k){ return Math.round(alo[k]||0); }
+function applyAlokasi(json){ try{ D().pengaturan.alokasi=JSON.parse(json); savePengaturan(); vibrate(20); toast('Alokasi saran diterapkan'); }catch(e){toast('Gagal',1);} }
 
-/* ===================== TARGET ===================== */
 function renderTarget(){
   const goals=D().target.map(goalProgress).sort((a,b)=>(a.prioritas==='tinggi'?0:1)-(b.prioritas==='tinggi'?0:1));
   $('v-target').innerHTML=`
-  <div class="hdr">Target Keuangan<div class="sub">${goals.length} target aktif · total terkumpul ${R(goals.reduce((a,g)=>a+(+g.terkumpul||0),0))}</div></div>
+  <div class="hdr">Target Keuangan <button class="info" style="vertical-align:middle;margin-left:6px" title="Target = tujuan menabung (cth: beli laptop, liburan, dp rumah).">?</button><div class="sub">${goals.length} target aktif · total terkumpul ${R(goals.reduce((a,g)=>a+(+g.terkumpul||0),0))}</div></div>
   ${goals.length?goals.map(g=>{const d=daysUntil(g.target_tanggal);
     return `<div class="card">
       <div class="between" style="margin-bottom:8px"><div><div class="nm" style="font-size:16px;font-weight:700">${E(g.nama)}</div><div class="sb">${R(g.terkumpul)} / ${R(g.target_jumlah)} · target ${fmtDate(g.target_tanggal)}</div></div><div class="chip ${g.cls}">${g.st}</div></div>
@@ -1319,26 +1235,25 @@ function renderTarget(){
         <div class="hl"><div class="ic-c">${g.etaBulan===0?'✅':'⏱️'}</div><div><div class="nm">${g.etaBulan===0?'Tercapai':(g.etaBulan!=null?g.etaBulan+' bln':'-')}</div><div class="sb">Estimasi tercapai</div></div></div>
       </div>
       <div class="row" style="gap:8px;margin-top:10px">
-        <button class="btn ghost sm grow" onclick="addContribution('${g.id}')">+ Setor</button>
-        <button class="btn ghost sm" onclick="editGoal('${g.id}')">Edit</button>
-        <button class="btn danger sm" onclick="delGoal('${g.id}')">Hapus</button>
+        <button class="btn ghost sm grow" onclick="vibrate(15);addContribution('${g.id}')">+ Setor</button>
+        <button class="btn ghost sm" onclick="vibrate(10);editGoal('${g.id}')">Edit</button>
+        <button class="btn danger sm" onclick="vibrate([20,40,20]);delGoal('${g.id}')">Hapus</button>
       </div>
     </div>`}).join('')
     :`<div class="card"><div class="empty"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>Belum ada target.<br>Ketuk tombol + untuk membuat target pertama.</div></div>`}
-  <button class="btn block" onclick="openAdd('goal')">+ Tambah Target</button>`;
+  <button class="btn block" onclick="vibrate(15);openAdd('goal')">+ Tambah Target</button>`;
 }
 
-/* ===================== TAGIHAN & UTANG ===================== */
 function renderTagihanUtang(){
   const bills=billsUpcoming(); const debts=debtsActive();
   const totalBills=bills.reduce((a,b)=>a+(+b.jumlah||0),0);
   const totalDebt=debts.reduce((a,u)=>a+(+u.sisa||0),0);
   const totalCicilan=debts.reduce((a,u)=>a+(+u.cicilan||0),0);
   $('v-tagihan').innerHTML=`
-  <div class="hdr">Tagihan & Utang<div class="sub">Pengingat jatuh tempo & pelunasan</div></div>
+  <div class="hdr">Tagihan &amp; Utang<div class="sub">Pengingat jatuh tempo &amp; pelunasan</div></div>
 
   <div class="card">
-    <h3>🧾 Tagihan Rutin <a class="ml" href="#" onclick="openAdd('bill');return false">+ Tagihan</a></h3>
+    <h3>🧾 Tagihan Rutin <a class="ml" href="#" onclick="vibrate(15);openAdd('bill');return false">+ Tagihan</a></h3>
     <div class="between" style="margin-bottom:10px"><div><div class="muted xs">Total tagihan belum dibayar</div><div class="big">${R(totalBills)}</div></div><div class="chip a">${bills.length} tagihan</div></div>
     ${bills.length?`<div class="list">${bills.map(b=>{let chip=''; if(b.hari<=0)chip='<span class="chip r">Jatuh tempo</span>'; else if(b.hari<=3)chip='<span class="chip r">H-'+b.hari+'</span>'; else if(b.hari<=7)chip='<span class="chip a">H-'+b.hari+'</span>'; else chip='<span class="chip">'+b.hari+' hari</span>';
       return `<div class="li"><div class="ic-c" style="background:var(--amber-l)">📅</div><div class="grow"><div class="nm">${E(b.nama)}</div><div class="sb">${fmtDate(b.jatuh_tempo)} · ${b.frekuensi}</div></div><div style="text-align:right"><div class="v">${R(b.jumlah)}</div>${chip}</div></div>`}).join('')}</div>`
@@ -1346,16 +1261,15 @@ function renderTagihanUtang(){
   </div>
 
   <div class="card">
-    <h3>💳 Utang & Cicilan <a class="ml" href="#" onclick="openAdd('debt');return false">+ Utang</a></h3>
+    <h3>💳 Utang &amp; Cicilan <a class="ml" href="#" onclick="vibrate(15);openAdd('debt');return false">+ Utang</a></h3>
     <div class="kpi" style="margin-bottom:10px"><div class="b"><div class="lbl">Total sisa utang</div><div class="v" style="color:var(--red)">${R(totalDebt)}</div></div><div class="b"><div class="lbl">Cicilan/bulan</div><div class="v">${R(totalCicilan)}</div></div></div>
     ${debts.length?debts.map(u=>{const pct=u.total>0?Math.round((u.total-u.sisa)/u.total*100):0;const d=daysUntil(u.jatuh_tempo);
       return `<div class="bar-row" style="margin-bottom:14px"><div class="top"><span class="nm">💳 ${E(u.nama)}</span><span class="v">${R(u.sisa)} / ${R(u.total)}</span></div><div class="prog"><div class="f b" style="width:${pct}%"></div></div><div class="between xs" style="margin-top:4px"><span class="muted">Lunas ${pct}% · cicilan ${R(u.cicilan)}/bln ${u.bunga?`(bunga ${u.bunga}%/bln)`:''}</span><span class="chip ${d<=3?'r':d<=7?'a':''}">${d<=0?'Jatuh tempo':'H-'+d}</span></div>
-      <div class="row" style="gap:8px;margin-top:8px"><button class="btn sm grow" onclick="payDebt('${u.id}')">Bayar cicilan</button><button class="btn ghost sm" onclick="editDebt('${u.id}')">Edit</button><button class="btn danger sm" onclick="delDebt('${u.id}')">Hapus</button></div></div>`}).join('')
+      <div class="row" style="gap:8px;margin-top:8px"><button class="btn sm grow" onclick="vibrate([15,30,15]);payDebt('${u.id}')">Bayar cicilan</button><button class="btn ghost sm" onclick="vibrate(10);editDebt('${u.id}')">Edit</button><button class="btn danger sm" onclick="vibrate([20,40,20]);delDebt('${u.id}')">Hapus</button></div></div>`}).join('')
       :`<div class="empty xs">Tidak ada utang aktif 🎉</div>`}
   </div>`;
 }
 
-/* ===================== NOTIFIKASI ===================== */
 let _notifTab='new';
 function renderNotifikasi(){
   const all=D().notifikasi||[];
@@ -1366,18 +1280,18 @@ function renderNotifikasi(){
   $('v-notif').innerHTML=`
   <div class="hdr">Pusat Notifikasi<div class="sub">${unreadCount()} belum ditangani · ${all.length} total</div></div>
   <div class="tabs">
-    <button class="${tab==='new'?'on':''}" onclick="_notifTab='new';renderNotifikasi()">Aktif (${all.filter(n=>n.status==='new').length})</button>
-    <button class="${tab==='handled'?'on':''}" onclick="_notifTab='handled';renderNotifikasi()">Ditangani</button>
-    <button class="${tab==='all'?'on':''}" onclick="_notifTab='all';renderNotifikasi()">Semua</button>
+    <button class="${tab==='new'?'on':''}" onclick="vibrate(8);_notifTab='new';renderNotifikasi()">Aktif (${all.filter(n=>n.status==='new').length})</button>
+    <button class="${tab==='handled'?'on':''}" onclick="vibrate(8);_notifTab='handled';renderNotifikasi()">Ditangani</button>
+    <button class="${tab==='all'?'on':''}" onclick="vibrate(8);_notifTab='all';renderNotifikasi()">Semua</button>
   </div>
   ${inQuietHours()?'<div class="banner b"><span class="em">🌙</span><div>Mode jam tenang aktif — notifikasi baru tetap dibuat namun tidak mengganggu.</div></div>':''}
   ${list.length?list.map(n=>`<div class="notif ${n.prioritas} ${n.status==='handled'?'read':''}">
       <div class="em">${n.emoji||'🔔'}</div><div class="bd"><div class="t">${E(n.judul)}</div><div class="m">${E(n.pesan)}</div>
       <div class="mt"><span>${new Date(n.timestamp).toLocaleString('id-ID',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span><span class="chip ${n.prioritas==='crit'?'r':n.prioritas==='hi'?'a':n.prioritas==='mid'?'b':'g'}">${n.tipe}</span></div>
-      <div class="act">${(n.aksi||[]).map(a=>`<button class="pri" onclick="doNotifAction('${a.t}','${a.v}','${n.id}')">${E(a.l)}</button>`).join('')}<button onclick="markNotif('${n.id}','handled')">✓ Ditangani</button><button onclick="markNotif('${n.id}','snooze')">Tunda</button><button onclick="clearNotif('${n.id}')">Hapus</button></div>
+      <div class="act">${(n.aksi||[]).map(a=>`<button class="pri" onclick="vibrate(12);doNotifAction('${a.t}','${a.v}','${n.id}')">${E(a.l)}</button>`).join('')}<button onclick="vibrate(10);markNotif('${n.id}','handled')">✓ Ditangani</button><button onclick="vibrate(8);markNotif('${n.id}','snooze')">Tunda</button><button onclick="vibrate([20,40,20]);clearNotif('${n.id}')">Hapus</button></div>
       </div></div>`).join('')
     :`<div class="card"><div class="empty"><svg class="ic" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/></svg>tidak ada notifikasi ${tab==='new'?'aktif':'di sini'}.</div></div>`}
-  ${all.length?`<button class="btn ghost block" onclick="clearAllNotif()">Hapus semua notifikasi</button>`:''}`;
+  ${all.length?`<button class="btn ghost block" onclick="vibrate([20,40,20]);clearAllNotif()">Hapus semua notifikasi</button>`:''}`;
 }
 function doNotifAction(t,v,id){
   markNotif(id,'handled');
@@ -1385,26 +1299,21 @@ function doNotifAction(t,v,id){
   else if(t==='paybill') payBill(v);
 }
 
-/* ===================== LAPORAN ===================== */
 function renderLaporan(){
-  // 6 bulan cashflow
   const series=[]; const now=new Date();
   for(let i=5;i>=0;i--){ const d=new Date(now.getFullYear(),now.getMonth()-i,1); const mk=d.toISOString().slice(0,7); const trxs=trxByMonth(mk); const net=sumIn(trxs)-sumOut(trxs); series.push({label:MONTHS[d.getMonth()],val:net}); }
-  // kategori pengeluaran bulan ini (donut)
   const mk=monthKey(); const catsOut=[]; const totOut=sumOut(trxByMonth(mk));
   D().kategori.filter(k=>k.tipe==='out').forEach(k=>{ const s=spentByKat(k.id,mk); if(s>0) catsOut.push({nama:k.nama,val:s,color:k.warna,ikon:k.ikon}); });
   catsOut.sort((a,b)=>b.val-a.val);
   const top5=catsOut.slice(0,5); const otherSum=catsOut.slice(5).reduce((a,c)=>a+c.val,0);
   const donutSegs=top5.map(c=>({val:c.val,color:c.color})); if(otherSum>0)donutSegs.push({val:otherSum,color:'#8a98ab'});
-  // abnormal
   const ab=abnormalSpending().slice(0,3);
-  // top transaksi terbesar
   const top=trxByMonth(mk).filter(t=>t.tipe==='out').sort((a,b)=>b.jumlah-a.jumlah).slice(0,5);
   $('v-laporan').innerHTML=`
   <div class="hdr">Laporan<div class="sub">Analisis 6 bulan terakhir · ${MONTHS[new Date().getMonth()]} ${new Date().getFullYear()}</div></div>
 
   <div class="card">
-    <h3>Arus Kas 6 Bulan <span class="chip ${series[series.length-1].val>=0?'g':'r'}">${series[series.length-1].val>=0?'Surplus':'Defisit'}</span></h3>
+    <h3>Arus Kas 6 Bulan <button class="info" title="Arus kas = pemasukan dikurangi pengeluaran. Hijau = surplus (untung), merah = defisit (rugi).">?</button> <span class="chip ${series[series.length-1].val>=0?'g':'r'}">${series[series.length-1].val>=0?'Surplus':'Defisit'}</span></h3>
     ${lineChart(series)}
     <div class="muted xs" style="margin-top:4px">Hijau = surplus (pemasukan > pengeluaran), merah = defisit.</div>
   </div>
@@ -1416,7 +1325,7 @@ function renderLaporan(){
   </div>
 
   <div class="card">
-    <h3>📈 Deteksi Pengeluaran Abnormal</h3>
+    <h3>📈 Deteksi Pengeluaran Abnormal <button class="info" title="Pengeluaran yang jauh lebih besar dari biasanya (rata-rata 3 bulan terakhir).">?</button></h3>
     ${ab.length?ab.map(a=>`<div class="li"><div class="ic-c" style="background:${a.kategori.warna}22">${a.kategori.ikon}</div><div class="grow"><div class="nm">${E(a.kategori.nama)}</div><div class="sb">${R(a.cur)} vs rata-rata ${R(a.avg)}</div></div><div class="chip a">+${a.pct}%</div></div>`).join('')
       :`<div class="empty xs">Tidak ada pengeluaran abnormal bulan ini ✨</div>`}
   </div>
@@ -1433,7 +1342,7 @@ function renderLaporan(){
     <div class="hb"><span class="nm">Arus kas bersih</span><span class="v">${R(sumIn(trxByMonth(mk))-sumOut(trxByMonth(mk)))}</span></div>
     <div class="hb"><span class="nm">Saldo total</span><span class="v">${R(totalSaldo())}</span></div>
     <div class="hb"><span class="nm">Rata-rata pengeluaran/hari</span><span class="v">${R(sumOut(trxByMonth(mk))/Math.max(1,new Date().getDate()))}</span></div>
-    <button class="btn ghost block sm" style="margin-top:10px" onclick="exportCSV()">⬇ Ekspor CSV (Excel/Sheets)</button>
+    <button class="btn ghost block sm" style="margin-top:10px" onclick="vibrate(15);exportCSV()">⬇ Ekspor CSV (Excel/Sheets)</button>
   </div>`;
 }
 
@@ -1442,7 +1351,7 @@ function renderPengaturan(){
   const set=D().pengaturan;
   const nf=set.notif||{}; const tq=set.tenang||{};
   $('v-pengaturan').innerHTML=`
-  <div class="hdr">Pengaturan<div class="sub">Profil & preferensi</div></div>
+  <div class="hdr">Pengaturan<div class="sub">Profil, rekening &amp; preferensi</div></div>
 
   <div class="card">
     <h3>👤 Profil</h3>
@@ -1451,27 +1360,16 @@ function renderPengaturan(){
       <div class="fld"><label>Penghasilan bulanan</label><input id="_setIncome" class="rp" value="${(+set.penghasilanBulanan).toLocaleString('id-ID')}"></div>
       <div class="fld"><label>Mata uang</label><select id="_setCur"><option ${set.matauang==='IDR'?'selected':''}>IDR</option><option ${set.matauang==='USD'?'selected':''}>USD</option></select></div>
     </div>
-    <button class="btn block sm" onclick="saveProfile()">Simpan profil</button>
-    ${!(+set.penghasilanBulanan>0)?'<div class="hint" style="margin-top:8px"><b>Tips:</b> isi penghasilan bulanan agar rekomendasi target dana darurat & rasio cicilan akurat.</div>':''}
+    <button class="btn block sm" onclick="vibrate(20);saveProfile()">Simpan profil</button>
+    ${!(+set.penghasilanBulanan>0)?'<div class="hint" style="margin-top:8px"><b>Tips:</b> isi penghasilan bulanan agar rekomendasi target dana darurat &amp; rasio cicilan akurat.</div>':''}
   </div>
 
-  <div class="card">
-    <h3>🔐 Keamanan</h3>
-    <div class="muted xs" style="margin-bottom:8px">Data dilindungi sandi — hash sandi disimpan di Properti Skrip Google, bukan di aplikasi. "Keluar" menghapus data dari perangkat ini.</div>
-    <div class="row" style="gap:8px">
-      <button class="btn ghost grow sm" onclick="openGantiSandi()">Ganti sandi</button>
-      <button class="btn grow sm" style="background:#d93b3b;color:#fff" onclick="doLogout()">Keluar</button>
-    </div>
-  </div>
+  ${renderRekeningCard()}
 
   <div class="card">
-    <h3>🔔 Preferensi Notifikasi</h3>
-    ${[['danaDarurat','Dana darurat belum ideal','Peringatan saat dana darurat < target'],['anggaran','Anggaran hampir habis/terlampaui','80% & 100% batas anggaran'],['tagihan','Tagihan mendekati jatuh tempo','H-7, H-3, H-1 & jatuh tempo'],['cashflow','Saldo berisiko','Proyeksi saldo rendah sebelum gajian'],['target','Target tabungan tertinggal','Progres melambat / melewati tenggat'],['langganan','Evaluasi langganan','Pengingat biaya rutin'],['abnormal','Pengeluaran abnormal','Melebihi pola normal 3 bln'],['utang','Cicilan jatuh tempo','H-3 & H-1 cicilan'],['gaji','Pengingat alokasi gaji','Saat gaji masuk'],['evaluasi','Evaluasi bulanan','Rekap awal bulan'],['tidakCatat','Tidak ada pencatatan','Pengingat jika lama tidak catat']].map(([k,l,d])=>`<div class="tg-row"><div class="grow"><div class="lb">${l}<small>${d}</small></div></div><div class="toggle ${nf[k]?'on':''}" onclick="toggleNotif('${k}',this)"></div></div>`).join('')}
-  </div>
-
-  <div class="card">
-    <h3>🌙 Jam Tenang</h3>
-    <div class="tg-row"><div class="grow"><div class="lb">Aktifkan jam tenang<small>Tidak mengganggu pada rentang waktu tertentu</small></div></div><div class="toggle ${tq.on?'on':''}" onclick="toggleTenang(this)"></div></div>
+    <h3>📳 Preferensi</h3>
+    <div class="tg-row"><div class="grow"><div class="lb">Mode Getar <button class="info" title="Getaran singkat saat klik tombol penting (Simpan, Bayar, Tambah, Hapus). Hanya jalan di Android/perangkat sentuh.">?</button><small>Getaran saat klik tombol penting — lebih nyaman & terasa responsif</small></div></div><div class="toggle ${set.getar!==false?'on':''}" onclick="vibrate(20);toggleGetar(this)"></div></div>
+    <div class="tg-row"><div class="grow"><div class="lb">🌙 Jam Tenang<small>Tidak mengganggu pada rentang waktu tertentu</small></div></div><div class="toggle ${tq.on?'on':''}" onclick="vibrate(15);toggleTenang(this)"></div></div>
     <div class="grid2">
       <div class="fld"><label>Mulai</label><input type="time" id="_tqM" value="${E(tq.mulai)}" onchange="saveTenang()"></div>
       <div class="fld"><label>Selesai</label><input type="time" id="_tqS" value="${E(tq.selesai)}" onchange="saveTenang()"></div>
@@ -1479,28 +1377,140 @@ function renderPengaturan(){
   </div>
 
   <div class="card">
-    <h3>💰 Alokasi Penghasilan <a class="ml" href="#" onclick="openAlokasi();return false">Edit</a></h3>
+    <h3>🔔 Notifikasi</h3>
+    ${[['danaDarurat','Dana darurat belum ideal','Peringatan saat dana darurat < target'],['anggaran','Anggaran hampir habis/terlampaui','80% & 100% batas anggaran'],['tagihan','Tagihan mendekati jatuh tempo','H-7, H-3, H-1 & jatuh tempo'],['cashflow','Saldo berisiko','Proyeksi saldo rendah sebelum gajian'],['target','Target tabungan tertinggal','Progres melambat / melewati tenggat'],['langganan','Evaluasi langganan','Pengingat biaya rutin'],['abnormal','Pengeluaran abnormal','Melebihi pola normal 3 bln'],['utang','Cicilan jatuh tempo','H-3 & H-1 cicilan'],['gaji','Pengingat alokasi gaji','Saat gaji masuk'],['evaluasi','Evaluasi bulanan','Rekap awal bulan'],['tidakCatat','Tidak ada pencatatan','Pengingat jika lama tidak catat']].map(([k,l,d])=>`<div class="tg-row"><div class="grow"><div class="lb">${l}<small>${d}</small></div></div><div class="toggle ${nf[k]?'on':''}" onclick="vibrate(15);toggleNotif('${k}',this)"></div></div>`).join('')}
+  </div>
+
+  <div class="card">
+    <h3>🔐 Keamanan</h3>
+    <div class="muted xs" style="margin-bottom:8px">Data dilindungi sandi — hash sandi disimpan di Properti Skrip Google, bukan di aplikasi. "Keluar" menghapus data dari perangkat ini.</div>
+    <div class="row" style="gap:8px">
+      <button class="btn ghost grow sm" onclick="vibrate(15);openGantiSandi()">Ganti sandi</button>
+      <button class="btn grow sm" style="background:#d93b3b;color:#fff" onclick="vibrate([20,40,40,40]);doLogout()">Keluar</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>💰 Alokasi Penghasilan <a class="ml" href="#" onclick="vibrate(10);openAlokasi();return false">Edit</a></h3>
     <div class="alo-bar">${[['kebutuhan','#2f6fd6'],['tabungan','#0f9d6b'],['investasi','#34d399'],['hiburan','#e8780a'],['bebas','#a855f7']].map(([k,c])=>{const v=set.alokasi[k]||0;return `<div style="width:${v}%;background:${c}">${v>=10?v+'%':''}</div>`}).join('')}</div>
     <div class="muted xs">Total: ${Object.values(set.alokasi).reduce((a,b)=>a+(+b||0),0)}% (harus 100%)</div>
   </div>
 
   <div class="card">
     <h3>🗂️ Data</h3>
-    <button class="btn ghost block sm" onclick="exportCSV()">Ekspor semua data (CSV)</button>
-    <button class="btn ghost block sm" style="margin-top:8px" onclick="exportJSON()">Backup (JSON)</button>
-    <button class="btn ghost block sm" style="margin-top:8px" onclick="importJSON()">Pulihkan dari backup</button>
-    <button class="btn danger block sm" style="margin-top:8px" onclick="resetData()">Reset semua data</button>
+    <button class="btn ghost block sm" onclick="vibrate(15);exportCSV()">Ekspor semua data (CSV)</button>
+    <button class="btn ghost block sm" style="margin-top:8px" onclick="vibrate(15);exportJSON()">Backup (JSON)</button>
+    <button class="btn ghost block sm" style="margin-top:8px" onclick="vibrate(15);importJSON()">Pulihkan dari backup</button>
+    <button class="btn danger block sm" style="margin-top:8px" onclick="vibrate([30,50,30,50]);resetData()">Reset semua data</button>
   </div>
 
   <div class="card">
     <h3>ℹ️ Tentang</h3>
-    <div class="muted sm">SmartFin — Smart Financial Manager. Asisten keuangan pintar dengan sistem peringatan finansial, perencana dana darurat, dan prediksi cashflow. Data tersimpan lokal di perangkat ini (localStorage). Skor kesehatan merupakan indikator internal, bukan penilaian kredit.</div>
+    <div class="muted sm">SmartFin — Asisten Keuangan Pintar. Bantu Anda kelola dana darurat, anggaran, tagihan, utang, dan target. Data tersimpan lokal di perangkat ini (localStorage) &amp; disinkron ke Google Sheets Anda. Skor kesehatan adalah indikator internal, bukan penilaian kredit.</div>
   </div>`;
 }
-function toggleNotif(k,el){ D().pengaturan.notif[k]=el.classList.contains('on')?0:1; el.classList.toggle('on'); savePengaturan(); }
-function toggleTenang(el){ D().pengaturan.tenang.on=el.classList.contains('on')?0:1; el.classList.toggle('on'); savePengaturan(); }
+
+/* ===== Kartu Kelola Rekening (TAMBAH/SALIN untuk transfer) ===== */
+function renderRekeningCard(){
+  const reks = D().rekening;
+  const totalRek = reks.reduce((a,r)=>a+saldoRekening(r.id),0);
+  return `
+  <div class="card">
+    <h3>🏦 Rekening Saya <button class="info" title="Daftar rekening/dompet Anda. Nomor rekening bisa disalin untuk transfer atau kirim ke orang lain.">?</button> <a class="ml" href="#" onclick="vibrate(15);openRekeningForm();return false">+ Tambah</a></h3>
+    <div class="between" style="margin-bottom:12px"><div><div class="muted xs">Total saldo semua rekening</div><div class="big sm2">${R(totalRek)}</div></div><div class="chip b">${reks.length} rekening</div></div>
+    ${reks.length?reks.map(r=>{
+      const saldo = saldoRekening(r.id);
+      const ikon = r.jenis==='E-wallet'?'📱':r.jenis==='Tunai'?'💵':'🏦';
+      const no = r.nomor_rekening? String(r.nomor_rekening):'';
+      return `<div class="rek-card">
+        <div class="rk-head">
+          <div class="ic-c">${ikon}</div>
+          <div class="grow"><div class="nm">${E(r.nama)}</div><div class="sb">${E(r.bank||r.jenis)}${no?' · '+no.slice(0,4)+'****'+no.slice(-3):''}</div></div>
+          <div class="v">${R(saldo)}</div>
+        </div>
+        ${no?`<div class="rk-no"><div class="lb">Nomor rekening/HP<b>${E(no)}</b></div><button class="cp" onclick="vibrate([10,30,10]);copyRekeningNo('${r.id}')">📋 Salin</button></div>`:`<div class="rk-no"><div class="lb">Nomor rekening belum diisi<button class="cp" style="background:var(--blue-l);color:var(--blue)" onclick="vibrate(10);openRekeningForm('${r.id}')">+ Isi nomor</button></div></div>`}
+        <div class="rk-actions">
+          <button class="edit" onclick="vibrate(10);openRekeningForm('${r.id}')">✏ Edit</button>
+          <button onclick="vibrate(10);openTrxForm('transfer',{from:'${r.id}'})">↔ Transfer dari sini</button>
+          <button class="del" onclick="vibrate([20,40,20]);delRekening('${r.id}')">🗑 Hapus</button>
+        </div>
+      </div>`;
+    }).join(''):'<div class="empty xs">Belum ada rekening. Ketuk "+ Tambah" untuk menambahkan.</div>'}
+  </div>`;
+}
+function copyRekeningNo(id){
+  const r = REK(id);
+  if(!r.nomor_rekening){ toast('Nomor rekening belum diisi', 2); return; }
+  const txt = String(r.nomor_rekening);
+  const fallback = () => {
+    // fallback untuk browser tanpa clipboard API
+    const ta = document.createElement('textarea'); ta.value = txt; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); toast('Nomor '+r.nama+' disalin: '+txt); vibrate([10,30,10]); }
+    catch(e){ toast('Gagal menyalin — salin manual', 2); }
+    document.body.removeChild(ta);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(()=>{
+      toast('Nomor '+r.nama+' disalin: '+txt);
+      vibrate([10,30,10]);
+    }).catch(fallback);
+  } else fallback;
+}
+function openRekeningForm(editId){
+  const r = editId? D().rekening.find(x=>x.id===editId) : {nama:'',jenis:'Bank',bank:'',nomor_rekening:'',saldo_awal:0};
+  openSheet(editId?'Edit Rekening':'Tambah Rekening', `
+    <div class="hint">Untuk transfer antar rekening &amp; salin nomor kirim ke orang lain. Nomor rekening/HP opsional — boleh dikosongkan.</div>
+    <div class="fld"><label>Nama rekening <button class="info" title="Beri nama yang mudah dikenali, misalnya 'BCA Utama' atau 'GoPay Pribadi'.">?</button></label><input id="_rkNama" value="${E(r.nama)}" placeholder="cth: BCA Utama"></div>
+    ${nameChips('_rkNama',['BCA','Mandiri','BNI','BRI','GoPay','OVO','Dana','ShopeePay','Tunai'])}
+    <div class="grid2">
+      <div class="fld"><label>Jenis</label><select id="_rkJenis"><option ${r.jenis==='Bank'?'selected':''}>Bank</option><option ${r.jenis==='E-wallet'?'selected':''}>E-wallet</option><option ${r.jenis==='Tunai'?'selected':''}>Tunai</option><option ${r.jenis==='Lainnya'?'selected':''}>Lainnya</option></select></div>
+      <div class="fld"><label>Bank/E-wallet <button class="info" title="Nama bank atau e-wallet (cth: BCA, Mandiri, GoPay).">?</button></label><input id="_rkBank" value="${E(r.bank)}" placeholder="cth: BCA"></div>
+    </div>
+    <div class="fld"><label>Nomor rekening / nomor HP <button class="info" title="Nomor rekening bank atau nomor HP e-wallet. Dipakai untuk salin & kirim ke orang lain saat transfer.">?</button></label><input id="_rkNo" inputmode="numeric" value="${E(r.nomor_rekening)}" placeholder="cth: 1234567890"></div>
+    <div class="fld"><label>Saldo awal</label>${amtField2('_rkSaldo','Saldo saat ini', [0,100000,500000,1000000,5000000,10000000], r.saldo_awal)}</div>
+    <div class="row" style="gap:8px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="vibrate(20);saveRekening('${editId||''}')">Simpan</button></div>`);
+}
+function amtField2(id,label,presets,val){
+  const v=(val!=null && +val>0)?(+val).toLocaleString('id-ID'):'';
+  const chips=(presets||[]).map(p=>`<button type="button" class="amt-c" onclick="amtAdd('${id}',${p})">${amtShort(p)}</button>`).join('');
+  return `<div class="fld"><label>${label}</label>
+    <div class="amt-row"><input id="${id}" class="rp" inputmode="numeric" placeholder="0" value="${v}"><button type="button" class="amt-clr" onclick="amtClear('${id}')" title="Hapus">×</button></div>
+    <div class="amt-pick">${chips}</div></div>`;
+}
+function saveRekening(id){
+  const row = { id:id||uid('rek'), nama:$('_rkNama').value.trim(), jenis:$('_rkJenis').value, bank:$('_rkBank').value.trim(), nomor_rekening:$('_rkNo').value.trim(), saldo_awal:rp2num($('_rkSaldo').value) };
+  if(!row.nama){ toast('Isi nama rekening dulu', 1); return; }
+  mutate('rekening', id?'upd':'add', row);
+  closeSheet();
+  toast(id?'Rekening diperbarui':'Rekening ditambahkan');
+  vibrate(20);
+}
+function delRekening(id){
+  const r = REK(id);
+  const adaTrx = D().transaksi.some(t=>t.rekening_id===id||t.ke_rekening_id===id);
+  let msg = `Hapus rekening "${r.nama}"?`;
+  if(adaTrx) msg += `\n\nCatatan: ada transaksi terkait. Saldo historis tetap tercatat, namun rekening ini tidak lagi muncul di daftar.`;
+  if(!confirm(msg)) return;
+  mutate('rekening','del',{id});
+  toast('Rekening dihapus');
+}
+
+function toggleGetar(el){
+  D().pengaturan.getar = el.classList.contains('on') ? false : true;
+  el.classList.toggle('on');
+  savePengaturan();
+  if(D().pengaturan.getar!==false){
+    vibrate([10,30,10,30,10]); // konfirmasi getaran dinyalakan
+    toast('Mode getar dinyalakan');
+  } else {
+    toast('Mode getar dimatikan');
+  }
+}
+function toggleNotif(k,el){ D().pengaturan.notif[k]=el.classList.contains('on')?0:1; el.classList.toggle('on'); savePengaturan(); vibrate(10); }
+function toggleTenang(el){ D().pengaturan.tenang.on=el.classList.contains('on')?0:1; el.classList.toggle('on'); savePengaturan(); vibrate(15); }
 function saveTenang(){ D().pengaturan.tenang.mulai=$('_tqM').value; D().pengaturan.tenang.selesai=$('_tqS').value; savePengaturan(); }
-function saveProfile(){ D().pengaturan.nama=$('_setNama').value; D().pengaturan.penghasilanBulanan=rp2num($('_setIncome').value); D().pengaturan.matauang=$('_setCur').value; savePengaturan(); toast('Profil disimpan'); }
+function saveProfile(){ D().pengaturan.nama=$('_setNama').value; D().pengaturan.penghasilanBulanan=rp2num($('_setIncome').value); D().pengaturan.matauang=$('_setCur').value; savePengaturan(); vibrate(20); toast('Profil disimpan'); }
 
 /* ===================== SHEET / FORMS ===================== */
 function openSheet(title, body){ $('sheetBody').innerHTML=`<h2>${E(title)}<span class="x" onclick="closeSheet()">✕</span></h2>${body}`; $('scrim').classList.add('on'); $('sheet').classList.add('on'); }
@@ -1515,12 +1525,8 @@ function openAdd(type){
 }
 
 function katOpts(tipe, sel){ return D().kategori.filter(k=>k.tipe===tipe).map(k=>`<option value="${k.id}" ${sel===k.id?'selected':''}>${k.ikon} ${E(k.nama)}</option>`).join(''); }
-function rekOpts(sel){ return D().rekening.map(r=>`<option value="${r.id}" ${sel===r.id?'selected':''}>${E(r.nama)}</option>`).join(''); }
+function rekOpts(sel){ return D().rekening.map(r=>`<option value="${r.id}" ${sel===r.id?'selected':''}>${E(r.nama)}${r.nomor_rekening?' ('+r.nomor_rekening.slice(-4)+')':''}</option>`).join(''); }
 
-/* ===== input cepat: ketuk angka, bukan ketik ===== */
-// input cepat: ketuk angka / nama, bukan ketik.
-// setVal, amtAdd, amtClear memakai document.getElementById (bukan $) supaya
-// pasti terjangkau dari onclick inline di semua browser.
 function setVal(id,val){ const el=document.getElementById(id); if(el){ el.value=val; } }
 function amtField(id,label,presets,val){
   const v=(val!=null && +val>0)?(+val).toLocaleString('id-ID'):'';
@@ -1530,21 +1536,20 @@ function amtField(id,label,presets,val){
     <div class="amt-pick">${chips}</div></div>`;
 }
 function amtShort(v){ if(v>=1000000){const m=v/1000000; return (m%1===0?m:m.toFixed(1))+'jt';} if(v>=1000) return (v/1000)+'rb'; return ''+v; }
-function amtAdd(id,val){ const el=document.getElementById(id); if(!el)return; el.value=(rp2num(el.value)+val).toLocaleString('id-ID'); el.style.background='var(--pri-l)'; setTimeout(()=>el.style.background='',220); }
-function amtClear(id){ const el=document.getElementById(id); if(!el)return; el.value=''; el.focus(); }
-// chip nama cepat (mis. "Internet", "Listrik") → mengisi input target
-function nameChips(targetId,names){ return `<div class="quick-names">${names.map(n=>`<button type="button" onclick="setVal('${targetId}','${E(n)}')">${E(n)}</button>`).join('')}</div>`; }
+function amtAdd(id,val){ const el=document.getElementById(id); if(!el)return; el.value=(rp2num(el.value)+val).toLocaleString('id-ID'); el.style.background='var(--pri-l)'; setTimeout(()=>el.style.background='',220); vibrate(8); }
+function amtClear(id){ const el=document.getElementById(id); if(!el)return; el.value=''; el.focus(); vibrate(10); }
+function nameChips(targetId,names){ return `<div class="quick-names">${names.map(n=>`<button type="button" onclick="vibrate(8);setVal('${targetId}','${E(n)}')">${E(n)}</button>`).join('')}</div>`; }
 
 function openTrxForm(tipe, prefill){
   const defKat = tipe==='in'?'k1':'k10';
   const body=`
   <div class="seg" id="_tipeSeg">
-    <button class="${tipe==='in'?'on':''}" onclick="_setTipe='in';_syncSeg()">Pemasukan</button>
-    <button class="${tipe==='out'?'on':''}" onclick="_setTipe='out';_syncSeg()">Pengeluaran</button>
-    <button class="${tipe==='transfer'?'on':''}" onclick="_setTipe='transfer';_syncSeg()">Transfer</button>
+    <button class="${tipe==='in'?'on':''}" onclick="vibrate(8);_setTipe='in';_syncSeg()">Pemasukan</button>
+    <button class="${tipe==='out'?'on':''}" onclick="vibrate(8);_setTipe='out';_syncSeg()">Pengeluaran</button>
+    <button class="${tipe==='transfer'?'on':''}" onclick="vibrate(8);_setTipe='transfer';_syncSeg()">Transfer</button>
   </div>
   <div id="_trxFormBody"></div>
-  <div class="row" style="gap:8px;margin-top:6px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="saveTrx()">Simpan</button></div>`;
+  <div class="row" style="gap:8px;margin-top:6px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="vibrate(20);saveTrx()">Simpan</button></div>`;
   window._setTipe=tipe; window._editTrx=null; window._prefill=prefill||null;
   openSheet(tipe==='in'?'Tambah Pemasukan':tipe==='out'?'Tambah Pengeluaran':'Transfer', body);
   _syncSeg();
@@ -1576,7 +1581,7 @@ function saveTrx(){
   if(t==='transfer' && $('_fRek').value===$('_fRekTo').value){toast('Rekening asal & tujuan sama',1);return;}
   const row={ id:uid('trx'), tgl:$('_fTgl').value, tipe:t, rekening_id:$('_fRek').value, jumlah:jml, deskripsi:$('_fDesc').value };
   if(t==='transfer') row.ke_rekening_id=$('_fRekTo').value; else row.kategori_id=$('_fKat').value;
-  mutate('transaksi','add',row); closeSheet(); toast(t==='in'?'Pemasukan dicatat':t==='transfer'?'Transfer dicatat':'Pengeluaran dicatat');
+  mutate('transaksi','add',row); closeSheet(); vibrate(20); toast(t==='in'?'Pemasukan dicatat':t==='transfer'?'Transfer dicatat':'Pengeluaran dicatat');
 }
 
 function openBudgetForm(){
@@ -1586,9 +1591,9 @@ function openBudgetForm(){
     <div class="fld"><label>Bulan</label><input type="month" id="_bBulan" value="${monthKey()}"></div>
     <div class="fld"><label>Kategori</label><select id="_bKat">${opts||'<option>Tidak ada kategori tersedia</option>'}</select></div>
     ${amtField('_bBatas','Batas pengeluaran',[500000,750000,1000000,1500000,2000000,3000000,5000000])}
-    <div class="row" style="gap:8px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="saveBudget()">Simpan</button></div>`);
+    <div class="row" style="gap:8px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="vibrate(20);saveBudget()">Simpan</button></div>`);
 }
-function saveBudget(){ const kat=$('_bKat').value; const batas=rp2num($('_bBatas').value); if(!kat||batas<=0){toast('Lengkapi data',1);return;} mutate('anggaran','add',{id:uid('bud'),kategori_id:kat,bulan:$('_bBulan').value,batas:batas}); closeSheet(); toast('Anggaran dibuat'); }
+function saveBudget(){ const kat=$('_bKat').value; const batas=rp2num($('_bBatas').value); if(!kat||batas<=0){toast('Lengkapi data',1);return;} mutate('anggaran','add',{id:uid('bud'),kategori_id:kat,bulan:$('_bBulan').value,batas:batas}); closeSheet(); vibrate(20); toast('Anggaran dibuat'); }
 
 function openBillForm(editId){
   const b=editId?D().tagihan.find(x=>x.id===editId):{nama:'',jumlah:0,jatuh_tempo:todayISO(),frekuensi:'bulanan',kategori_id:'k14',status:'belum'};
@@ -1599,12 +1604,11 @@ function openBillForm(editId){
     <div class="grid2"><div class="fld"><label>Jatuh tempo</label><input type="date" id="_blDue" value="${b.jatuh_tempo}"></div>
     <div class="fld"><label>Frekuensi</label><select id="_blFreq"><option ${b.frekuensi==='bulanan'?'selected':''}>bulanan</option><option ${b.frekuensi==='mingguan'?'selected':''}>mingguan</option><option ${b.frekuensi==='tahunan'?'selected':''}>tahunan</option><option ${b.frekuensi==='sekali'?'selected':''}>sekali</option></select></div></div>
     <div class="fld"><label>Kategori</label><select id="_blKat">${katOpts('out',b.kategori_id)}</select></div>
-    <div class="row" style="gap:8px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="saveBill('${editId||''}')">Simpan</button></div>`);
+    <div class="row" style="gap:8px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="vibrate(20);saveBill('${editId||''}')">Simpan</button></div>`);
 }
-function saveBill(id){ const row={id:id||uid('bill'),nama:$('_blNama').value,jumlah:rp2num($('_blJml').value),jatuh_tempo:$('_blDue').value,frekuensi:$('_blFreq').value,kategori_id:$('_blKat').value,status:id?D().tagihan.find(x=>x.id===id).status:'belum'}; if(!row.nama||row.jumlah<=0){toast('Lengkapi',1);return;} mutate('tagihan',id?'upd':'add',row); closeSheet(); toast('Tagihan disimpan'); }
-function payBill(id){ const b=D().tagihan.find(x=>x.id===id); if(!b)return; b.status='lunas'; mutate('tagihan','upd',b); // catat pengeluaran otomatis
-  mutate('transaksi','add',{id:uid('trx'),tgl:todayISO(),tipe:'out',kategori_id:b.kategori_id,rekening_id:(D().rekening[0]||{}).id,deskripsi:'Bayar '+b.nama,jumlah:b.jumlah}); toast('Tagihan ditandai lunas'); }
-function delBill(id){ if(!confirm('Hapus tagihan?'))return; mutate('tagihan','del',{id}); toast('Dihapus'); }
+function saveBill(id){ const row={id:id||uid('bill'),nama:$('_blNama').value,jumlah:rp2num($('_blJml').value),jatuh_tempo:$('_blDue').value,frekuensi:$('_blFreq').value,kategori_id:$('_blKat').value,status:id?D().tagihan.find(x=>x.id===id).status:'belum'}; if(!row.nama||row.jumlah<=0){toast('Lengkapi',1);return;} mutate('tagihan',id?'upd':'add',row); closeSheet(); vibrate(20); toast('Tagihan disimpan'); }
+function payBill(id){ const b=D().tagihan.find(x=>x.id===id); if(!b)return; b.status='lunas'; mutate('tagihan','upd',b); mutate('transaksi','add',{id:uid('trx'),tgl:todayISO(),tipe:'out',kategori_id:b.kategori_id,rekening_id:(D().rekening[0]||{}).id,deskripsi:'Bayar '+b.nama,jumlah:b.jumlah}); vibrate([15,30,15]); toast('Tagihan ditandai lunas'); }
+function delBill(id){ if(!confirm('Hapus tagihan?'))return; vibrate([20,40,20]); mutate('tagihan','del',{id}); toast('Dihapus'); }
 
 function openGoalForm(editId){
   const g=editId?D().target.find(x=>x.id===editId):{nama:'',target_jumlah:0,terkumpul:0,target_tanggal:futureISO(180),prioritas:'sedang',setoran_bulanan:0};
@@ -1617,13 +1621,12 @@ function openGoalForm(editId){
     <div class="grid2"><div class="fld"><label>Target tanggal</label><input type="date" id="_gDate" value="${g.target_tanggal}"></div>
     <div class="fld"><label>Prioritas</label><select id="_gPri"><option ${g.prioritas==='tinggi'?'selected':''}>tinggi</option><option ${g.prioritas==='sedang'?'selected':''}>sedang</option><option ${g.prioritas==='rendah'?'selected':''}>rendah</option></select></div></div>
     ${amtField('_gSetor','Setoran bulanan',[100000,250000,500000,750000,1000000,2000000], g.setoran_bulanan)}
-    <div class="row" style="gap:8px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="saveGoal('${editId||''}')">Simpan</button></div>`);
+    <div class="row" style="gap:8px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="vibrate(20);saveGoal('${editId||''}')">Simpan</button></div>`);
 }
-function saveGoal(id){ const row={id:id||uid('goal'),nama:$('_gNama').value,target_jumlah:rp2num($('_gTarget').value),terkumpul:rp2num($('_gKumpul').value),target_tanggal:$('_gDate').value,prioritas:$('_gPri').value,setoran_bulanan:rp2num($('_gSetor').value)}; if(!row.nama||row.target_jumlah<=0){toast('Lengkapi',1);return;} mutate('target',id?'upd':'add',row); closeSheet(); toast('Target disimpan'); }
+function saveGoal(id){ const row={id:id||uid('goal'),nama:$('_gNama').value,target_jumlah:rp2num($('_gTarget').value),terkumpul:rp2num($('_gKumpul').value),target_tanggal:$('_gDate').value,prioritas:$('_gPri').value,setoran_bulanan:rp2num($('_gSetor').value)}; if(!row.nama||row.target_jumlah<=0){toast('Lengkapi',1);return;} mutate('target',id?'upd':'add',row); closeSheet(); vibrate(20); toast('Target disimpan'); }
 function editGoal(id){ openGoalForm(id); }
-function delGoal(id){ if(!confirm('Hapus target?'))return; mutate('target','del',{id}); toast('Dihapus'); }
-function addContribution(id){ const g=D().target.find(x=>x.id===id); if(!g)return; const amt=prompt('Setoran untuk "'+g.nama+'":', '500000'); if(amt==null)return; const a=rp2num(amt); if(a<=0)return; g.terkumpul=(+g.terkumpul||0)+a; mutate('target','upd',g); // catat sebagai transaksi tabungan
-  const tk=D().kategori.find(k=>k.tipe==='out'&&/tabungan/i.test(k.nama)); if(tk) mutate('transaksi','add',{id:uid('trx'),tgl:todayISO(),tipe:'out',kategori_id:tk.id,rekening_id:(D().rekening[0]||{}).id,deskripsi:'Setor target '+g.nama,jumlah:a}); toast('Setoran ditambahkan'); }
+function delGoal(id){ if(!confirm('Hapus target?'))return; vibrate([20,40,20]); mutate('target','del',{id}); toast('Dihapus'); }
+function addContribution(id){ const g=D().target.find(x=>x.id===id); if(!g)return; const amt=prompt('Setoran untuk "'+g.nama+'":', '500000'); if(amt==null)return; const a=rp2num(amt); if(a<=0)return; g.terkumpul=(+g.terkumpul||0)+a; mutate('target','upd',g); const tk=D().kategori.find(k=>k.tipe==='out'&&/tabungan/i.test(k.nama)); if(tk) mutate('transaksi','add',{id:uid('trx'),tgl:todayISO(),tipe:'out',kategori_id:tk.id,rekening_id:(D().rekening[0]||{}).id,deskripsi:'Setor target '+g.nama,jumlah:a}); vibrate([15,30,15]); toast('Setoran ditambahkan'); }
 
 function openDebtForm(editId){
   const u=editId?D().utang.find(x=>x.id===editId):{nama:'',total:0,sisa:0,cicilan:0,bunga:0,jatuh_tempo:todayISO(),frekuensi:'bulanan'};
@@ -1636,38 +1639,38 @@ function openDebtForm(editId){
     <div class="grid2"><div class="fld"><label>Bunga %/bln</label><input id="_uBunga" value="${u.bunga}" inputmode="decimal"></div>
     <div class="fld"><label>Jatuh tempo</label><input type="date" id="_uDue" value="${u.jatuh_tempo}"></div></div>
     <div class="fld"><label>Frekuensi</label><select id="_uFreq"><option ${u.frekuensi==='bulanan'?'selected':''}>bulanan</option><option ${u.frekuensi==='mingguan'?'selected':''}>mingguan</option></select></div>
-    <div class="row" style="gap:8px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="saveDebt('${editId||''}')">Simpan</button></div>`);
+    <div class="row" style="gap:8px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="vibrate(20);saveDebt('${editId||''}')">Simpan</button></div>`);
 }
-function saveDebt(id){ const row={id:id||uid('debt'),nama:$('_uNama').value,total:rp2num($('_uTotal').value),sisa:rp2num($('_uSisa').value),cicilan:rp2num($('_uCicil').value),bunga:+num($('_uBunga').value),jatuh_tempo:$('_uDue').value,frekuensi:$('_uFreq').value}; if(!row.nama||row.total<=0){toast('Lengkapi',1);return;} mutate('utang',id?'upd':'add',row); closeSheet(); toast('Utang disimpan'); }
+function saveDebt(id){ const row={id:id||uid('debt'),nama:$('_uNama').value,total:rp2num($('_uTotal').value),sisa:rp2num($('_uSisa').value),cicilan:rp2num($('_uCicil').value),bunga:+num($('_uBunga').value),jatuh_tempo:$('_uDue').value,frekuensi:$('_uFreq').value}; if(!row.nama||row.total<=0){toast('Lengkapi',1);return;} mutate('utang',id?'upd':'add',row); closeSheet(); vibrate(20); toast('Utang disimpan'); }
 function editDebt(id){ openDebtForm(id); }
-function delDebt(id){ if(!confirm('Hapus utang?'))return; mutate('utang','del',{id}); toast('Dihapus'); }
-function payDebt(id){ const u=D().utang.find(x=>x.id===id); if(!u)return; const a=Math.min(+u.cicilan||0,+u.sisa||0); if(a<=0){toast('Tidak ada cicilan',1);return;} u.sisa=Math.max(0,(+u.sisa)-a); mutate('utang','upd',u); const kd=D().kategori.find(k=>k.tipe==='out'&&/cicilan|utang/i.test(k.nama)); mutate('transaksi','add',{id:uid('trx'),tgl:todayISO(),tipe:'out',kategori_id:kd?kd.id:'k16',rekening_id:(D().rekening[0]||{}).id,deskripsi:'Bayar cicilan '+u.nama,jumlah:a}); toast('Cicilan '+R(a)+' dibayar'); }
+function delDebt(id){ if(!confirm('Hapus utang?'))return; vibrate([20,40,20]); mutate('utang','del',{id}); toast('Dihapus'); }
+function payDebt(id){ const u=D().utang.find(x=>x.id===id); if(!u)return; const a=Math.min(+u.cicilan||0,+u.sisa||0); if(a<=0){toast('Tidak ada cicilan',1);return;} u.sisa=Math.max(0,(+u.sisa)-a); mutate('utang','upd',u); const kd=D().kategori.find(k=>k.tipe==='out'&&/cicilan|utang/i.test(k.nama)); mutate('transaksi','add',{id:uid('trx'),tgl:todayISO(),tipe:'out',kategori_id:kd?kd.id:'k16',rekening_id:(D().rekening[0]||{}).id,deskripsi:'Bayar cicilan '+u.nama,jumlah:a}); vibrate([15,30,15]); toast('Cicilan '+R(a)+' dibayar'); }
 
 function openEmergency(){
   const dd=D().danaDarurat;
   openSheet('Atur Dana Darurat', `
-    <div class="hint"><b>Cara hitung:</b> Target dana darurat = 6 × (biaya hidup pokok + cicilan utang/bulan) untuk IDEAL, atau 3 × untuk MINIMUM. Cicilan diambil otomatis dari daftar Utang — baris "cicilan/utang" di daftar ini diabaikan agar tidak dihitung dua kali.</div>
-    <div class="fld"><label>Rekening yang dianggap dana darurat (opsional)</label><select id="_ddRek"><option value="">— Otomatis (rekening "darurat") —</option>${D().rekening.map(r=>`<option value="${r.id}" ${D().pengaturan.danaDaruratRekening===r.id?'selected':''}>${E(r.nama)}</option>`).join('')}</select></div>
+    <div class="hint"><b>Apa itu dana darurat?</b> Uang cadangan untuk keadaan genting (sakit, PHK, kebutuhan mendadak). <b>Target ideal = 6 × (biaya hidup + cicilan)</b>, minimum 3 ×. Cicilan diambil otomatis dari daftar Utang — baris "cicilan/utang" di sini diabaikan agar tidak dihitung dua kali.</div>
+    <div class="fld"><label>Rekening yang dianggap dana darurat (opsional)</label><select id="_ddRek"><option value="">— Otomatis (rekening bernama "darurat") —</option>${D().rekening.map(r=>`<option value="${r.id}" ${D().pengaturan.danaDaruratRekening===r.id?'selected':''}>${E(r.nama)}</option>`).join('')}</select></div>
     <div class="div"></div>
     <h3 style="font-size:14px;margin-bottom:8px">Kebutuhan pokok bulanan</h3>
     <div id="_ddList">${dd.map((x,i)=>`<div class="grid2" style="margin-bottom:8px"><div class="fld" style="margin:0"><input id="_ddN${i}" value="${E(x.kategori_kebutuhan)}"></div><div class="fld" style="margin:0"><input id="_ddJ${i}" class="rp" value="${(+x.jumlah_bulanan).toLocaleString('id-ID')}" inputmode="numeric"></div></div>`).join('')}</div>
     ${dd.length?'':'<div class="hint" style="margin:8px 0">Belum ada kebutuhan pokok yang diisi — tambahkan baris manual atau pakai contoh (semua angka bisa diubah sebelum disimpan).</div>'}
     <div class="row" style="gap:8px;margin-bottom:10px"><button class="btn ghost grow sm" onclick="addDDRow()">+ Tambah baris</button><button class="btn ghost sm" onclick="fillDDContoh()">Pakai contoh</button></div>
-    <div class="banner b"><span class="em">📊</span><div id="_ddTotal">Beban/bulan: ${R(biayaHidupPokok())} hidup + ${R(cicilanBulanan())} cicilan = <b>${R(bebanBulanan())}</b></div></div>
-    <div class="row" style="gap:8px;margin-top:10px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="saveEmergency()">Simpan</button></div>`);
+    <div class="banner b"><span class="em">📊</span><div id="_ddTotal">Beban/pulan: ${R(biayaHidupPokok())} hidup + ${R(cicilanBulanan())} cicilan = <b>${R(bebanBulanan())}</b></div></div>
+    <div class="row" style="gap:8px;margin-top:10px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="vibrate(20);saveEmergency()">Simpan</button></div>`);
 }
 function fillDDContoh(){ const list=$('_ddList'); DEF_DD.forEach(x=>{ const i=list.querySelectorAll('.grid2').length; const c=document.createElement('div'); c.className='grid2'; c.style.marginBottom='8px'; c.innerHTML=`<div class="fld" style="margin:0"><input id="_ddN${i}" value="${E(x.kategori_kebutuhan)}"></div><div class="fld" style="margin:0"><input id="_ddJ${i}" class="rp" value="${(+x.jumlah_bulanan).toLocaleString('id-ID')}" inputmode="numeric"></div>`; list.appendChild(c); }); }
 function addDDRow(){ const i=document.querySelectorAll('#_ddList .grid2').length; const c=document.createElement('div'); c.className='grid2'; c.style.marginBottom='8px'; c.innerHTML=`<div class="fld" style="margin:0"><input id="_ddN${i}" placeholder="cth: Pendidikan"></div><div class="fld" style="margin:0"><input id="_ddJ${i}" class="rp" inputmode="numeric" placeholder="0"></div>`; $('_ddList').appendChild(c); }
-function saveEmergency(){ const rows=[]; document.querySelectorAll('#_ddList .grid2').forEach((g,i)=>{ const n=$('_ddN'+i), j=$('_ddJ'+i); if(n&&j&&n.value.trim()){ rows.push({id:uid2(),kategori_kebutuhan:n.value.trim(),jumlah_bulanan:rp2num(j.value)}); } }); D().danaDarurat=rows; D().pengaturan.danaDaruratRekening=$('_ddRek').value; savePengaturan(); pushQ({t:'danaDarurat',op:'replace',rows}); closeSheet(); toast('Konfigurasi dana darurat disimpan'); }
+function saveEmergency(){ const rows=[]; document.querySelectorAll('#_ddList .grid2').forEach((g,i)=>{ const n=$('_ddN'+i), j=$('_ddJ'+i); if(n&&j&&n.value.trim()){ rows.push({id:uid2(),kategori_kebutuhan:n.value.trim(),jumlah_bulanan:rp2num(j.value)}); } }); D().danaDarurat=rows; D().pengaturan.danaDaruratRekening=$('_ddRek').value; savePengaturan(); pushQ({t:'danaDarurat',op:'replace',rows}); closeSheet(); vibrate(20); toast('Konfigurasi dana darurat disimpan'); }
 
 function openIncome(){
   const inc=penghasilanInfo();
   openSheet('Penghasilan bulanan', `
-    <div class="hint">Dipakai untuk menghitung rasio cicilan & rekomendasi target dana darurat. ${inc.src==='estimasi'?'Saat ini memakai <b>estimasi dari transaksi</b> — isi angka pasti agar akurat.':''}</div>
+    <div class="hint">Dipakai untuk menghitung rasio cicilan &amp; rekomendasi target dana darurat. ${inc.src==='estimasi'?'Saat ini memakai <b>estimasi dari transaksi</b> — isi angka pasti agar akurat.':''}</div>
     ${amtField('_incV','Penghasilan per bulan',[3000000,5000000,8000000,10000000,15000000,20000000,30000000], D().pengaturan.penghasilanBulanan)}
-    <div class="row" style="gap:8px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="saveIncome()">Simpan</button></div>`);
+    <div class="row" style="gap:8px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="vibrate(20);saveIncome()">Simpan</button></div>`);
 }
-function saveIncome(){ const v=rp2num($('_incV').value); if(v<=0){toast('Isi penghasilan dengan benar',1);return;} D().pengaturan.penghasilanBulanan=v; savePengaturan(); closeSheet(); toast('Penghasilan disimpan'); }
+function saveIncome(){ const v=rp2num($('_incV').value); if(v<=0){toast('Isi penghasilan dengan benar',1);return;} D().pengaturan.penghasilanBulanan=v; savePengaturan(); closeSheet(); vibrate(20); toast('Penghasilan disimpan'); }
 function quickDepositDD(){
   const set=D().pengaturan;
   const dd=D().rekening.find(x=>x.id===set.danaDaruratRekening)||D().rekening.find(x=>/darurat|emergency/i.test(x.nama))||null;
@@ -1680,37 +1683,33 @@ function quickDepositDD(){
 function openAlokasi(){
   const a=D().pengaturan.alokasi;
   openSheet('Alokasi Penghasilan', `
-    <div class="hint"><b>Tidak harus dikunci.</b> Sistem menyesuaikan dengan kondisi Anda. Atur persentase sendiri, total harus 100%.</div>
+    <div class="hint"><b>Cara membagi gaji Anda.</b> Atur persentase sendiri, total harus 100%. Sistem juga bisa memberi saran adaptif sesuai kondisi utang &amp; dana darurat Anda.</div>
     ${[['kebutuhan','Kebutuhan','#2f6fd6'],['tabungan','Tabungan & dana darurat','#0f9d6b'],['investasi','Investasi','#34d399'],['hiburan','Keinginan & hiburan','#e8780a'],['bebas','Dana bebas','#a855f7']].map(([k,l,c])=>`<div class="fld"><label><span class="tag-dot" style="background:${c}"></span> ${l}</label><div class="row"><input type="range" id="_al${k}" min="0" max="60" value="${a[k]||0}" oninput="_alSum()" style="flex:1"><input id="_alV${k}" value="${a[k]||0}%" style="width:54px;text-align:center;font-weight:700" readonly></div></div>`).join('')}
     <div class="banner b" id="_alBox"><span class="em">∑</span><div id="_alTotal">Total: ${Object.values(a).reduce((s,v)=>s+(+v||0),0)}%</div></div>
-    <div class="row" style="gap:8px;margin-top:10px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="saveAlokasi()">Simpan</button></div>`);
+    <div class="row" style="gap:8px;margin-top:10px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="vibrate(20);saveAlokasi()">Simpan</button></div>`);
 }
 function _alSum(){ const keys=['kebutuhan','tabungan','investasi','hiburan','bebas']; let t=0; keys.forEach(k=>{ const v=+$('_al'+k).value; $('_alV'+k).value=v+'%'; t+=v; }); $('_alTotal').textContent='Total: '+t+'%'; $('_alBox').className='banner '+(t===100?'g':(t>100?'r':'a')); }
-function saveAlokasi(){ const keys=['kebutuhan','tabungan','investasi','hiburan','bebas']; const o={}; let t=0; keys.forEach(k=>{o[k]=+$('_al'+k).value;t+=o[k];}); if(t!==100){toast('Total harus 100% (saat ini '+t+'%)',1);return;} D().pengaturan.alokasi=o; savePengaturan(); closeSheet(); toast('Alokasi disimpan'); }
+function saveAlokasi(){ const keys=['kebutuhan','tabungan','investasi','hiburan','bebas']; const o={}; let t=0; keys.forEach(k=>{o[k]=+$('_al'+k).value;t+=o[k];}); if(t!==100){toast('Total harus 100% (saat ini '+t+'%)',1);return;} D().pengaturan.alokasi=o; savePengaturan(); closeSheet(); vibrate(20); toast('Alokasi disimpan'); }
 
 /* ===================== DATA MANAGEMENT ===================== */
 function exportCSV(){
   const rows=[['Tanggal','Tipe','Kategori','Rekening','Keterangan','Jumlah']];
   D().transaksi.forEach(t=>rows.push([t.tgl,t.tipe,KAT(t.kategori_id).nama,REK(t.rekening_id).nama,t.deskripsi,t.jumlah]));
   const csv='\ufeff'+rows.map(r=>r.map(c=>'"'+String(c??'').replace(/"/g,'""')+'"').join(';')).join('\n');
-  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='smartfin-transaksi-'+todayISO()+'.csv'; a.click(); toast('CSV terunduh');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='smartfin-transaksi-'+todayISO()+'.csv'; a.click(); vibrate(15); toast('CSV terunduh');
 }
-function exportJSON(){ const blob=new Blob([JSON.stringify(D(),null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='smartfin-backup-'+todayISO()+'.json'; a.click(); toast('Backup terunduh'); }
-function importJSON(){ const i=document.createElement('input'); i.type='file'; i.accept='.json'; i.onchange=e=>{ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>{ try{ const d=JSON.parse(r.result); S.d=normalizeD(d); persist(); recomputeAll(); toast('Data dipulihkan'); }catch(err){toast('File tidak valid',1);} }; r.readAsText(f); }; i.click(); }
-function resetData(){ if(!confirm('Reset SEMUA data? Semua catatan akan DIKOSONGKAN dan aplikasi kembali seperti baru. Tindakan ini tidak bisa dibatalkan.'))return; localStorage.removeItem('sf_d'); S.d=JSON.parse(JSON.stringify(KOSONG)); persist(); recomputeAll(); toast('Semua data dikosongkan'); }
+function exportJSON(){ const blob=new Blob([JSON.stringify(D(),null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='smartfin-backup-'+todayISO()+'.json'; a.click(); vibrate(15); toast('Backup terunduh'); }
+function importJSON(){ const i=document.createElement('input'); i.type='file'; i.accept='.json'; i.onchange=e=>{ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>{ try{ const d=JSON.parse(r.result); S.d=normalizeD(d); persist(); recomputeAll(); vibrate(20); toast('Data dipulihkan'); }catch(err){toast('File tidak valid',1);} }; r.readAsText(f); }; i.click(); }
+function resetData(){ if(!confirm('Reset SEMUA data? Semua catatan akan DIKOSONGKAN dan aplikasi kembali seperti baru. Tindakan ini tidak bisa dibatalkan.'))return; vibrate([30,50,30,50]); localStorage.removeItem('sf_d'); S.d=JSON.parse(JSON.stringify(KOSONG)); persist(); recomputeAll(); toast('Semua data dikosongkan'); }
 
 /* ===================== INIT ===================== */
-// format input rupiah saat diketik
 document.addEventListener('input', e=>{ const t=e.target; if(t.classList&&t.classList.contains('rp')){
     const n=t.value.replace(/[^\d]/g,''); t.value=n?(+n).toLocaleString('id-ID'):'';
-    // update total beban live (baris bernama cicilan/utang diabaikan — diambil dari daftar Utang)
     if(t.closest('#_ddList')){ let tot=0; document.querySelectorAll('#_ddList .grid2').forEach(g=>{ const nm=g.querySelector('input:not(.rp)'), j=g.querySelector('input.rp'); if(nm&&j&&!/cicilan|utang|angsuran/i.test(nm.value||'')) tot+=rp2num(j.value); });
-      if($('_ddTotal'))$('_ddTotal').textContent='Beban/bulan: '+R(tot)+' hidup + '+R(cicilanBulanan())+' cicilan = '+R(tot+cicilanBulanan()); }
+      if($('_ddTotal'))$('_ddTotal').textContent='Beban/pulan: '+R(tot)+' hidup + '+R(cicilanBulanan())+' cicilan = '+R(tot+cicilanBulanan()); }
   } });
-// tutup sheet saat tekan Esc
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeSheet(); });
 
-// === PWA: service worker (cache offline) + tombol pasang aplikasi ===
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
 }
@@ -1728,7 +1727,6 @@ window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); _pwaEvt=
 })();
 window.addEventListener('appinstalled', ()=>{ const b=$('installBtn'); if(b) b.classList.remove('show'); });
 
-// mulai
 boot();
 </script>
 </body>
