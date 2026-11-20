@@ -187,6 +187,10 @@ input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink)}
 .kat-combo input{padding-right:30px}
 .kat-combo::after{content:"▾";position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--mut);pointer-events:none;font-size:14px}
 .kat-hint{font-size:11px;color:var(--mut2);margin-top:4px;font-weight:500}
+
+/* Tombol hapus kecil di baris kategori custom */
+.kat-del{width:28px;height:28px;border-radius:8px;background:var(--red-l);color:var(--red);font-size:16px;font-weight:700;border:0;cursor:pointer;display:grid;place-items:center;line-height:1;margin-right:6px;flex-shrink:0;transition:transform .08s}
+.kat-del:active{transform:scale(.9);background:var(--red);color:#fff}
 </style>
 </head>
 <body>
@@ -411,7 +415,7 @@ function normalizeD(d){
 function persist(){ L('sf_d', S.d); }
 
 /* ===================== API LAYER ===================== */
-const API = 'https://script.google.com/macros/s/AKfycbz1mwr6ugMqHXPVct0CHXxKfkzqxvNsSdi7aeDRWxqnMFAe8fwWT4OKXuOX0yMvSA/exec';
+const API = 'https://script.google.com/macros/s/AKfycbxzPOqrdjoS_1sitAtcAEUN9FZ59C7b0zgj0yXvfOxlxh1Ludmr2g4a2JZd6ZuSZA/exec';
 
 async function apiRaw(action, body){
   try{
@@ -1026,10 +1030,21 @@ function renderTabungan(){
     '<div class="card">'+
       '<h3>📊 Total Tabungan</h3>'+
       '<div class="big sm2" style="color:var(--blue)">'+R(totalSav)+'</div>'+
-      '<div class="muted xs" style="margin-top:4px">Semua kategori tabungan</div>'+
+      '<div class="muted xs" style="margin-top:4px">Semua kategori tabungan · '+tabPerKat.length+' kategori</div>'+
       '<div class="list" style="margin-top:10px">'+
-        tabPerKat.map(k=>'<div class="li" onclick="vibrate(10);openAdd(\'sav\',\''+k.id+'\')" style="cursor:pointer"><div class="ic" style="background:'+k.warna+'22">'+k.ikon+'</div><div class="grow"><div class="nm">'+k.nama+'</div><div class="sb">'+k.trxCount+' catatan · ketuk untuk setor</div></div><div class="v sav">'+R(k.total)+'</div></div>').join('')+
+        tabPerKat.map(k=>{
+          const isCustom = k.id && k.id.startsWith('kc_');
+          const delBtn = isCustom ? '<button class="kat-del" onclick="event.stopPropagation();vibrate([10,20,10]);delKat(\''+k.id+'\')" aria-label="Hapus kategori" title="Hapus kategori">×</button>' : '';
+          const badge = isCustom ? ' <span class="chip b" style="font-size:9px;padding:2px 6px">custom</span>' : '';
+          return '<div class="li" onclick="vibrate(10);openAdd(\'sav\',\''+k.id+'\')" style="cursor:pointer">'+
+            '<div class="ic" style="background:'+k.warna+'22">'+k.ikon+'</div>'+
+            '<div class="grow"><div class="nm">'+k.nama+badge+'</div><div class="sb">'+k.trxCount+' catatan · ketuk untuk setor</div></div>'+
+            delBtn+
+            '<div class="v sav">'+R(k.total)+'</div>'+
+          '</div>';
+        }).join('')+
       '</div>'+
+      '<button class="btn ghost block sm" style="margin-top:10px" onclick="vibrate(12);openAddKat(\'sav\')">+ Tambah kategori tabungan</button>'+
     '</div>'+
 
     '<div class="card">'+
@@ -1266,6 +1281,50 @@ function findOrCreateKat(namaInput, tipe){
   persist();
   pushQ({t:'kategori', op:'add', id, row:newKat});
   return id;
+}
+/* === Kelola Kategori: tambah/hapus kategori custom === */
+function openAddKat(tipe){
+  const labelMap = {in:'Pemasukan', out:'Pengeluaran', sav:'Tabungan'};
+  const tipeLabel = labelMap[tipe] || 'Tabungan';
+  const phMap = {in:'cth: Penjualan Online, Jasa Konsultasi...', out:'cth: Marketing, Software, Sewa Alat...', sav:'cth: Tabungan Rumah, Tabungan Liburan, Tabungan Pendidikan...'};
+  const ikonHint = {in:'➕', out:'📦', sav:'💰'};
+  openSheet('Tambah Kategori '+tipeLabel, ''+
+    '<div class="hint" style="margin-bottom:12px">Kategori baru akan muncul di form catat '+tipeLabel.toLowerCase()+'. Pakai nama yang spesifik agar mudah dicari.</div>'+
+    '<div class="fld"><label>Nama kategori</label><input id="_katNama" placeholder="'+phMap[tipe]+'" autofocus></div>'+
+    '<div class="muted xs" style="margin-bottom:12px">Ikon default: '+ikonHint[tipe]+' · bisa diketik ulang lewat form catat nanti</div>'+
+    '<div class="row" style="gap:8px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="vibrate(20);saveKat(\''+tipe+'\')">Simpan</button></div>');
+}
+function saveKat(tipe){
+  const inp = $('_katNama');
+  if(!inp){toast('Form belum siap',1);return;}
+  const nama = inp.value.trim();
+  if(!nama){toast('Isi nama kategori dulu',1);inp.focus();return;}
+  // Cek duplikat (case-insensitive)
+  const dup = D().kategori.find(k=>k.tipe===tipe && k.nama.toLowerCase() === nama.toLowerCase());
+  if(dup){toast('Kategori "'+nama+'" sudah ada',2);inp.focus();return;}
+  // Buat kategori baru
+  const id = 'kc_' + Date.now().toString(36) + Math.random().toString(36).slice(2,4);
+  const ikon = tipe==='in'?'➕':tipe==='sav'?'💰':'📦';
+  const warna = tipe==='in'?'#22c55e':tipe==='sav'?'#7c5fd6':'#8a98ab';
+  const newKat = {id, nama, tipe, ikon, warna};
+  mutate('kategori','add',newKat);
+  closeSheet();
+  toast('Kategori "'+nama+'" ditambahkan');
+}
+function delKat(id){
+  const k = KAT(id);
+  if(!k || k.id!==id){toast('Kategori tidak ditemukan',1);return;}
+  // Cegah hapus kategori default
+  if(!id.startsWith('kc_')){toast('Kategori default tidak bisa dihapus',1);return;}
+  // Cek apakah ada transaksi yang pakai kategori ini
+  const trxCount = D().transaksi.filter(t=>t.kategori_id===id).length;
+  if(trxCount > 0){
+    if(!confirm('Kategori "'+k.nama+'" dipakai oleh '+trxCount+' transaksi.\n\nHapus kategori? Transaksi tetap ada tapi akan tampil dengan kategori "?" sampai diedit manual.'))return;
+  } else {
+    if(!confirm('Hapus kategori "'+k.nama+'"?'))return;
+  }
+  mutate('kategori','del',{id});
+  toast('Kategori "'+k.nama+'" dihapus');
 }
 function openAdd(tipe, katId){
   const labelMap = {in:'Pemasukan', out:'Pengeluaran', sav:'Tabungan'};
