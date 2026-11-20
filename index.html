@@ -175,6 +175,18 @@ input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink)}
 .alert .bd .t{font-weight:700;font-size:13.5px;line-height:1.25}
 .alert .bd .m{font-size:12.5px;color:var(--mut);margin-top:3px;line-height:1.45}
 .alert .bd .m b{color:var(--ink)}
+
+/* Baris biaya bulanan dengan tombol hapus */
+.biaya-row{display:grid;grid-template-columns:1fr 1fr 38px;gap:8px;margin-bottom:8px;align-items:start}
+.biaya-row .fld{margin:0}
+.biaya-del{width:38px;height:42px;border-radius:11px;background:var(--red-l);color:var(--red);font-size:20px;font-weight:700;border:0;cursor:pointer;display:grid;place-items:center;line-height:1;transition:transform .08s}
+.biaya-del:active{transform:scale(.92);background:var(--red);color:#fff}
+
+/* Combobox kategori — input + datalist, bisa ketik sendiri */
+.kat-combo{position:relative}
+.kat-combo input{padding-right:30px}
+.kat-combo::after{content:"▾";position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--mut);pointer-events:none;font-size:14px}
+.kat-hint{font-size:11px;color:var(--mut2);margin-top:4px;font-weight:500}
 </style>
 </head>
 <body>
@@ -427,16 +439,23 @@ async function flush(){
     if(j){ S.q = S.q.slice(b.length); persistQ(); }
   }catch(e){}
   _f=false;
+  // Setelah queue kosong, hapus flag resetPending & pull data terbaru
+  if(S.q.length === 0 && L('sf_resetPending')){
+    L('sf_resetPending', false);
+    pull();
+  }
 }
 async function pull(){
   if(S.q.length || !navigator.onLine) return;
+  // Jangan pull kalau reset belum selesai sync ke backend
+  if(L('sf_resetPending')) return;
   const j = await apiSync('data', {});
   const d = j && j.d;
   if(d && d.transaksi && d.transaksi.length){
     S.d = normalizeD(d); L('sf_d', S.d); renderAll();
   }
 }
-function syncNow(){ flush(); pull(); }
+function syncNow(){ flush(); if(!S.q.length && !L('sf_resetPending')) pull(); }
 
 /* ===================== LOGIN / BOOT ===================== */
 async function boot(){
@@ -1051,7 +1070,7 @@ function renderPengaturan(){
     '<div class="card">'+
       '<h3>Biaya Bulanan</h3>'+
       '<div class="muted xs" style="margin-bottom:8px">Untuk hitung target dana darurat = N × beban bulanan</div>'+
-      '<div id="_biayaList">'+biayaList.map((x,i)=>'<div class="grid2" style="margin-bottom:8px"><div class="fld" style="margin:0"><input id="_biN'+i+'" value="'+E(x.nama)+'" placeholder="cth: Makan"></div><div class="fld" style="margin:0"><input id="_biJ'+i+'" class="rp" value="'+(+x.jumlah).toLocaleString('id-ID')+'" inputmode="numeric"></div></div>').join('')+'</div>'+
+      '<div id="_biayaList">'+biayaList.map((x,i)=>'<div class="biaya-row"><div class="fld"><input class="bi-nama" value="'+E(x.nama)+'" placeholder="cth: Makan"></div><div class="fld"><input class="bi-jml rp" value="'+(+x.jumlah).toLocaleString('id-ID')+'" inputmode="numeric" placeholder="0"></div><button type="button" class="biaya-del" onclick="delBiayaRow(this)" aria-label="Hapus">×</button></div>').join('')+'</div>'+
       '<div class="row" style="gap:8px;margin:8px 0"><button class="btn ghost sm grow" onclick="addBiayaRow()">+ Tambah baris</button></div>'+
       '<div class="banner b"><span class="em">∑</span><div>Total beban bulanan: <b>'+R(totalBiaya)+'</b></div></div>'+
       '<button class="btn block sm" onclick="vibrate(20);saveBiaya()">Simpan</button>'+
@@ -1095,16 +1114,34 @@ function saveProfile(){
   toast('Profil disimpan');
 }
 function addBiayaRow(){
-  const i=document.querySelectorAll('#_biayaList .grid2').length;
   const c=document.createElement('div');
-  c.className='grid2'; c.style.marginBottom='8px';
-  c.innerHTML='<div class="fld" style="margin:0"><input id="_biN'+i+'" placeholder="cth: Lainnya"></div><div class="fld" style="margin:0"><input id="_biJ'+i+'" class="rp" inputmode="numeric" placeholder="0"></div>';
+  c.className='biaya-row';
+  c.innerHTML='<div class="fld"><input class="bi-nama" placeholder="cth: Lainnya"></div><div class="fld"><input class="bi-jml rp" inputmode="numeric" placeholder="0"></div><button type="button" class="biaya-del" onclick="delBiayaRow(this)" aria-label="Hapus">×</button>';
   $('_biayaList').appendChild(c);
+  c.querySelector('.bi-nama').focus();
+}
+function delBiayaRow(btn){
+  vibrate([10,20,10]);
+  const row = btn.closest('.biaya-row');
+  if(row){
+    const nama = row.querySelector('.bi-nama').value || 'baris';
+    if(confirm('Hapus baris "'+nama+'"?')){
+      row.remove();
+      updateBiayaTotal();
+    }
+  }
+}
+function updateBiayaTotal(){
+  let tot=0;
+  document.querySelectorAll('#_biayaList .bi-jml').forEach(j=>tot+=rp2num(j.value));
+  // Update banner total
+  const banner = document.querySelector('#v-pengaturan .banner.b b');
+  if(banner) banner.textContent = R(tot);
 }
 function saveBiaya(){
   const rows=[];
-  document.querySelectorAll('#_biayaList .grid2').forEach((g,i)=>{
-    const n=$('_biN'+i), j=$('_biJ'+i);
+  document.querySelectorAll('#_biayaList .biaya-row').forEach(row=>{
+    const n=row.querySelector('.bi-nama'), j=row.querySelector('.bi-jml');
     if(n&&j&&n.value.trim()) rows.push({id:uid('b'),nama:n.value.trim(),jumlah:rp2num(j.value)});
   });
   D().pengaturan.biayaHidup=rows;
@@ -1130,12 +1167,28 @@ function importJSON(){
 function resetData(){
   if(!confirm('Reset SEMUA data? Tindakan ini tidak bisa dibatalkan.'))return;
   vibrate([20,40,20]);
+  // 1. Kumpulkan delete ops untuk SEMUA transaksi di backend
+  const oldD = S.d || D();
+  const ops = [];
+  (oldD.transaksi || []).forEach(t => {
+    ops.push({t:'transaksi', op:'del', id: t.id, row: {id: t.id}});
+  });
+  // 2. Reset pengaturan ke default di backend
+  ops.push({t:'pengaturan', op:'set', row: JSON.parse(JSON.stringify(DEF_SET))});
+  // 3. Masukkan ke queue sync
+  S.q = (S.q || []).concat(ops);
+  persistQ();
+  // 4. Set flag: blok pull() sampai semua delete ops terkirim
+  L('sf_resetPending', true);
+  // 5. Clear data lokal
   localStorage.removeItem('sf_d');
-  S.d=JSON.parse(JSON.stringify(KOSONG));
+  S.d = JSON.parse(JSON.stringify(KOSONG));
   persist();
+  // 6. Trigger sync langsung
+  flush();
   renderAll();
   go('home');
-  toast('Semua data dikosongkan');
+  toast(ops.length>1 ? 'Data dikosongkan — '+ops.length+' perubahan sedang dikirim ke server' : 'Data dikosongkan');
 }
 function openGantiSandi(){
   openSheet('Ganti sandi', ''+
@@ -1177,6 +1230,43 @@ function openAddPicker(){
 function katOpts(tipe, sel){
   return D().kategori.filter(k=>k.tipe===tipe).map(k=>'<option value="'+k.id+'" '+(sel===k.id?'selected':'')+'>'+k.ikon+' '+E(k.nama)+'</option>').join('');
 }
+/* Combobox kategori — input + datalist, user bisa pilih existing ATAU ketik sendiri */
+function katField(tipe, selId){
+  const kats = D().kategori.filter(k=>k.tipe===tipe);
+  const listId = '_katDL_'+tipe;
+  const selKat = kats.find(k=>k.id===selId) || kats[0];
+  const selVal = selKat ? (selKat.ikon+' '+selKat.nama) : '';
+  const options = kats.map(k=>'<option value="'+k.ikon+' '+E(k.nama)+'">').join('');
+  const phMap = {in:'cth: Penjualan, Jasa, Modal...', out:'cth: Makan, Stok, Listrik...', sav:'cth: Dana Darurat, Investasi, Tabungan Rumah...'};
+  return '<div class="fld"><label>Kategori <span class="xs muted" style="font-weight:500">(boleh ketik sendiri)</span></label>'+
+    '<div class="kat-combo"><input id="_fKat" list="'+listId+'" value="'+E(selVal)+'" placeholder="'+phMap[tipe]+'" autocomplete="off"></div>'+
+    '<datalist id="'+listId+'">'+options+'</datalist>'+
+    '<div class="kat-hint">Pilih dari daftar atau ketik nama kategori baru — otomatis disimpan</div>'+
+  '</div>';
+}
+/* Cari kategori by nama, kalau tidak ada → buat baru */
+function findOrCreateKat(namaInput, tipe){
+  // Strip emoji prefix (cth: "🛡️ Dana Darurat" → "Dana Darurat")
+  let nama = String(namaInput||'').trim();
+  // Buang emoji/non-text di awal sampai huruf pertama
+  nama = nama.replace(/^[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\s]+/u, '').trim();
+  // Kalau setelah strip kosong, pakai input asli
+  if(!nama) nama = String(namaInput||'').trim();
+  if(!nama) return null;
+  // Case-insensitive match
+  const existing = D().kategori.find(k=>k.tipe===tipe && k.nama.toLowerCase() === nama.toLowerCase());
+  if(existing) return existing.id;
+  // Buat kategori baru
+  const id = 'kc_' + Date.now().toString(36) + Math.random().toString(36).slice(2,4);
+  const ikon = tipe==='in'?'➕':tipe==='sav'?'💰':'📦';
+  const warna = tipe==='in'?'#22c55e':tipe==='sav'?'#7c5fd6':'#8a98ab';
+  const newKat = {id, nama, tipe, ikon, warna};
+  D().kategori.push(newKat);
+  // Persist + sync (tanpa renderAll agar form tidak ke-reset)
+  persist();
+  pushQ({t:'kategori', op:'add', id, row:newKat});
+  return id;
+}
 function openAdd(tipe, katId){
   const labelMap = {in:'Pemasukan', out:'Pengeluaran', sav:'Tabungan'};
   const tipeLabel = labelMap[tipe];
@@ -1186,7 +1276,7 @@ function openAdd(tipe, katId){
 
   openSheet('Catat '+tipeLabel, ''+
     '<div class="fld"><label>Tanggal</label><input type="date" id="_fTgl" value="'+todayISO()+'"></div>'+
-    '<div class="fld"><label>Kategori</label><select id="_fKat">'+katOpts(tipe, katId||defaultKat)+'</select></div>'+
+    katField(tipe, katId||defaultKat)+
     amtField('_fJml', tipe==='in'?'Berapa uang masuk?':tipe==='sav'?'Berapa disisihkan?':'Berapa uang keluar?', presets)+
     '<div class="fld"><label>Keterangan <span style="color:var(--mut2);font-weight:400">(opsional)</span></label><input id="_fDesc" placeholder="'+ph+'"></div>'+
     '<div class="row" style="gap:8px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="vibrate(20);saveTrx(\''+tipe+'\')">Simpan</button></div>');
@@ -1196,11 +1286,16 @@ function saveTrx(tipe){
   if(!elJml){toast('Form belum siap',1);closeSheet();return;}
   const jml=rp2num(elJml.value);
   if(jml<=0){toast('Isi jumlah dulu',1);elJml.focus();return;}
+  const elKat=$('_fKat');
+  if(!elKat || !elKat.value.trim()){toast('Isi kategori dulu',1);if(elKat)elKat.focus();return;}
+  // Resolve kategori: existing ID atau buat baru
+  const kategoriId = findOrCreateKat(elKat.value, tipe);
+  if(!kategoriId){toast('Kategori tidak valid',1);elKat.focus();return;}
   const row={
     id: uid('trx'),
     tgl: $('_fTgl').value,
     tipe: tipe,
-    kategori_id: $('_fKat').value,
+    kategori_id: kategoriId,
     jumlah: jml,
     deskripsi: $('_fDesc').value
   };
@@ -1216,16 +1311,9 @@ document.addEventListener('input', e=>{
   if(t.classList&&t.classList.contains('rp')){
     const n=t.value.replace(/[^\d]/g,'');
     t.value = n?(+n).toLocaleString('id-ID'):'';
-    // Update total biaya di form pengaturan
+    // Update total biaya live di form pengaturan
     if(t.closest('#_biayaList')){
-      let tot=0;
-      document.querySelectorAll('#_biayaList .grid2').forEach(g=>{
-        const j=g.querySelector('input.rp');
-        if(j) tot+=rp2num(j.value);
-      });
-      // Cari banner total & update
-      const banners = document.querySelectorAll('#v-pengaturan .banner b');
-      banners.forEach(b=>{ if(b.textContent.startsWith('Rp')) b.textContent=R(tot); });
+      updateBiayaTotal();
     }
   }
 });
