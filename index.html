@@ -430,7 +430,14 @@ function vibrate(pattern){
 }
 
 let S = { tab:'dash', d:null, q:[], busy:0, modal:null, filterMonth:monthKey(), edit:null };
-const D = () => S.d || DEMO;
+const D = () => {
+  if(!S.d){
+    // Safety: reload dari localStorage jika S.d hilang (anti-crash)
+    let ld = L('sf_d');
+    S.d = normalizeD(ld || KOSONG);
+  }
+  return S.d;
+};
 
 const DEF_KAT = [
   {id:'k1',nama:'Gaji',tipe:'in',ikon:'💼',warna:'#0f9d6b'},
@@ -628,6 +635,7 @@ function afterData(){
 
 /* ===================== MUTASI DATA ===================== */
 function mutate(tipe, op, row){
+  if(!S.d) S.d = normalizeD(L('sf_d') || KOSONG);  // safety: reload jika null
   if(tipe==='pengaturan'){
     S.d.pengaturan = row;
   } else {
@@ -1619,25 +1627,25 @@ function openAddPicker(){
   openSheet('Pilih Aksi', `
     <div class="hint" style="margin-bottom:12px">Pilih jenis transaksi yang ingin Anda catat.</div>
     <div class="big-actions" style="margin:0 0 14px">
-      <button class="big-btn in" onclick="closeSheet();vibrate(15);openAdd('in')">
+      <button class="big-btn in" onclick="vibrate(15);openAdd('in')">
         <div class="ic"><svg class="svg" viewBox="0 0 24 24"><path d="M12 4v14"/><path d="M19 14l-7 7-7-7"/></svg></div>
         <div><div class="t">Uang Masuk</div><div class="s">Gaji, bonus, terima uang</div></div>
       </button>
-      <button class="big-btn out" onclick="closeSheet();vibrate(15);openAdd('out')">
+      <button class="big-btn out" onclick="vibrate(15);openAdd('out')">
         <div class="ic"><svg class="svg" viewBox="0 0 24 24"><path d="M12 20V6"/><path d="M5 13l7-7 7 7"/></svg></div>
         <div><div class="t">Uang Keluar</div><div class="s">Makan, belanja, bayar</div></div>
       </button>
     </div>
     <div class="qa">
-      <button class="qa-transfer" onclick="closeSheet();vibrate(12);openAdd('transfer')">
+      <button class="qa-transfer" onclick="vibrate(12);openAdd('transfer')">
         <div class="c"><svg class="ic" viewBox="0 0 24 24"><path d="M7 7h13M17 4l3 3-3 3M17 17H4M7 20l-3-3 3-3"/></svg></div>
         <span>Transfer</span>
       </button>
-      <button class="qa-bill" onclick="closeSheet();vibrate(12);openAdd('bill')">
+      <button class="qa-bill" onclick="vibrate(12);openAdd('bill')">
         <div class="c"><svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
         <span>Tagihan</span>
       </button>
-      <button class="qa-goal" onclick="closeSheet();vibrate(12);openAdd('goal')">
+      <button class="qa-goal" onclick="vibrate(12);openAdd('goal')">
         <div class="c"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div>
         <span>Target</span>
       </button>
@@ -1661,17 +1669,11 @@ function amtClear(id){ const el=document.getElementById(id); if(!el)return; el.v
 function nameChips(targetId,names){ return `<div class="quick-names">${names.map(n=>`<button type="button" onclick="vibrate(8);setVal('${targetId}','${E(n)}')">${E(n)}</button>`).join('')}</div>`; }
 
 function openTrxForm(tipe, prefill){
-  const body=`
-  <div id="_trxFormBody"></div>
-  <div class="row" style="gap:8px;margin-top:6px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="vibrate(20);saveTrx()">Simpan</button></div>`;
-  window._setTipe=tipe; window._editTrx=null; window._prefill=prefill||null;
-  openSheet(tipe==='in'?'Catat Uang Masuk':tipe==='out'?'Catat Uang Keluar':'Transfer Antar Rekening', body);
-  _syncSeg();
-}
-function _syncSeg(){
-  const t=_setTipe;
+  window._setTipe=tipe; window._editTrx=null;
+  const t=tipe;
   const kats = t==='in'?katOpts('in','k1'):katOpts('out','k10');
-  $('_trxFormBody').innerHTML=`
+  // Bangun form LENGKAP dalam 1 langkah — tidak pakai _trxFormBody kosong dulu
+  const formFields = `
     <div class="grid2">
       <div class="fld"><label>Tanggal</label><input type="date" id="_fTgl" value="${todayISO()}"></div>
       <div class="fld"><label>Rekening</label><select id="_fRek">${rekOpts(D().rekening[0]&&D().rekening[0].id)}</select></div>
@@ -1680,21 +1682,34 @@ function _syncSeg(){
     ${t!=='transfer'?`<div class="fld"><label>Kategori</label><select id="_fKat">${kats}</select></div>`:''}
     ${amtField('_fJml', t==='in'?'Berapa uang yang masuk?':t==='transfer'?'Berapa uang ditransfer?':'Berapa uang yang keluar?', [10000,25000,50000,100000,200000,500000,1000000,2000000])}
     <div class="fld"><label>Keterangan <span style="color:var(--mut2);font-weight:500">(opsional)</span></label><input id="_fDesc" placeholder="${t==='in'?'cth: Gaji November, bonus proyek':t==='transfer'?'cth: Pindah ke tabungan':'cth: Makan siang, beli pulsa'}"></div>`;
-  if(window._prefill){
-    const p=window._prefill; window._prefill=null;
-    if(p.amount) setVal('_fJml', (+p.amount).toLocaleString('id-ID'));
-    if(p.from) setVal('_fRek', p.from);
-    if(p.to && t==='transfer') setVal('_fRekTo', p.to);
-    if(p.desc) setVal('_fDesc', p.desc);
+  const body = formFields + `
+    <div class="row" style="gap:8px;margin-top:6px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="vibrate(20);saveTrx()">Simpan</button></div>`;
+  openSheet(t==='in'?'Catat Uang Masuk':t==='out'?'Catat Uang Keluar':'Transfer Antar Rekening', body);
+  // Isi prefill (untuk transfer dari rekening card / quick deposit)
+  if(prefill){
+    if(prefill.amount) setVal('_fJml', (+prefill.amount).toLocaleString('id-ID'));
+    if(prefill.from) setVal('_fRek', prefill.from);
+    if(prefill.to && t==='transfer') setVal('_fRekTo', prefill.to);
+    if(prefill.desc) setVal('_fDesc', prefill.desc);
   }
 }
 function saveTrx(){
-  const t=_setTipe; const jml=rp2num($('_fJml').value);
-  if(jml<=0){toast('Isi jumlah dengan benar',1);return;}
-  if(t==='transfer' && $('_fRek').value===$('_fRekTo').value){toast('Rekening asal & tujuan sama',1);return;}
-  const row={ id:uid('trx'), tgl:$('_fTgl').value, tipe:t, rekening_id:$('_fRek').value, jumlah:jml, deskripsi:$('_fDesc').value };
-  if(t==='transfer') row.ke_rekening_id=$('_fRekTo').value; else row.kategori_id=$('_fKat').value;
-  mutate('transaksi','add',row); closeSheet(); vibrate(20); toast(t==='in'?'Pemasukan dicatat':t==='transfer'?'Transfer dicatat':'Pengeluaran dicatat');
+  const t=window._setTipe||'out';
+  // Null safety — jika field tidak ada (mis. form gagal render), tolak & reload form
+  const elJml=$('_fJml'), elTgl=$('_fTgl'), elRek=$('_fRek'), elDesc=$('_fDesc'), elKat=$('_fKat'), elRekTo=$('_fRekTo');
+  if(!elJml||!elTgl||!elRek){ toast('Form belum siap, coba lagi',1); closeSheet(); return; }
+  const jml=rp2num(elJml.value);
+  if(jml<=0){ toast('Isi jumlah uangnya dulu',1); elJml.focus(); return; }
+  if(t==='transfer'){
+    if(!elRekTo){ toast('Pilih rekening tujuan',1); return; }
+    if(elRek.value===elRekTo.value){ toast('Rekening asal & tujuan sama',1); return; }
+  }
+  const row={ id:uid('trx'), tgl:elTgl.value, tipe:t, rekening_id:elRek.value, jumlah:jml, deskripsi:elDesc?elDesc.value:'' };
+  if(t==='transfer') row.ke_rekening_id=elRekTo.value; else row.kategori_id=elKat?elKat.value:'';
+  mutate('transaksi','add',row);
+  closeSheet();
+  vibrate(20);
+  toast(t==='in'?'Uang masuk dicatat ✓':t==='transfer'?'Transfer dicatat ✓':'Uang keluar dicatat ✓');
 }
 
 function openBudgetForm(){
