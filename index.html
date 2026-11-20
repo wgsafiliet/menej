@@ -217,15 +217,29 @@ input,select,textarea{font-family:inherit;font-size:var(--fs);color:var(--ink)}
 .legend .it{display:flex;align-items:center;gap:8px;font-size:12.5px}
 .legend .it .d{width:10px;height:10px;border-radius:3px}
 .legend .it .v{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums}
-/* quick actions */
-.qa{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-.qa a{display:flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none;color:var(--ink);font-size:10.5px;font-weight:600}
-.qa a .c{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:var(--pri-l);color:var(--pri-d)}
-.qa a .c .ic{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-.qa a:nth-child(2) .c{background:var(--red-l);color:var(--red)}
-.qa a:nth-child(3) .c{background:var(--blue-l);color:var(--blue)}
-.qa a:nth-child(4) .c{background:var(--amber-l);color:var(--amber)}
-.qa a:nth-child(5) .c{background:#f0eafc;color:#7c5fd6}
+/* tombol aksi besar (Uang Masuk / Uang Keluar) — 2 tombol utama paling sering dipakai */
+.big-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.big-btn{display:flex;align-items:center;gap:10px;padding:14px;border-radius:14px;border:2px solid transparent;background:var(--card);color:var(--ink);font-weight:700;text-align:left;cursor:pointer;transition:transform .08s,box-shadow .15s;box-shadow:var(--sh);-webkit-tap-highlight-color:transparent}
+.big-btn:active{transform:scale(.97)}
+.big-btn .ic{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;flex-shrink:0;font-size:22px;font-weight:800}
+.big-btn .ic .svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.big-btn .t{font-size:15px;line-height:1.1}
+.big-btn .s{font-size:11px;color:var(--mut);font-weight:600;margin-top:2px;line-height:1.3}
+.big-btn.in{border-color:var(--pri-l)}
+.big-btn.in .ic{background:var(--pri);color:#fff}
+.big-btn.out{border-color:var(--red-l)}
+.big-btn.out .ic{background:var(--red);color:#fff}
+@media(min-width:960px){.big-btn:hover{box-shadow:var(--sh-lg)}}
+/* quick actions — 3 tombol sekunder (Transfer, Tagihan, Target). Pakai <button> biar pasti bisa diklik di semua browser/mobile */
+.qa{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.qa button{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 6px;border-radius:14px;background:var(--card);color:var(--ink);font-size:11.5px;font-weight:700;border:1px solid var(--line);cursor:pointer;transition:transform .08s,background .15s;-webkit-tap-highlight-color:transparent}
+.qa button:active{transform:scale(.95);background:var(--line2)}
+.qa button .c{width:44px;height:44px;border-radius:12px;display:grid;place-items:center}
+.qa button .c .ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.qa button.qa-transfer .c{background:var(--blue-l);color:var(--blue)}
+.qa button.qa-bill .c{background:var(--amber-l);color:var(--amber)}
+.qa button.qa-goal .c{background:#f0eafc;color:#7c5fd6}
+@media(min-width:960px){.qa button:hover{background:var(--line2)}}
 /* misc */
 .hdr{font-size:18px;font-weight:800;padding:4px 0 10px;letter-spacing:-.3px}
 .hdr .sub{font-size:12px;color:var(--mut);font-weight:600;margin-top:2px;letter-spacing:0}
@@ -596,6 +610,14 @@ function enterApp(){
   $('app').hidden=false;
   afterData();
   syncNow();
+  // Login pertama & misi belum lengkap → arahkan ke Misi di Pengaturan
+  const m = misiStatus();
+  if(m.done < m.total && !L('sf_misiShown')){
+    L('sf_misiShown', true);
+    S.tab = 'pengaturan';
+    go('pengaturan');
+    setTimeout(()=>{ toast('👋 Selesaikan Misi di atas untuk mulai'); }, 700);
+  }
   if(!window._syncTimer){ window._syncTimer=setInterval(syncNow, 60000); addEventListener('online', syncNow); }
 }
 function afterData(){
@@ -1072,14 +1094,32 @@ function renderDashboard(){
     ${(!inT&&!outT)?'<div class="muted xs" style="margin-top:8px">Belum ada transaksi bulan ini — ketuk tombol ➕ untuk mencatat.</div>':''}
   </div>
 
+  <div class="big-actions">
+    <button class="big-btn in" onclick="vibrate(15);openAdd('in')" aria-label="Catat pemasukan">
+      <div class="ic"><svg class="svg" viewBox="0 0 24 24"><path d="M12 4v14"/><path d="M19 14l-7 7-7-7"/></svg></div>
+      <div><div class="t">Uang Masuk</div><div class="s">Gaji, bonus, terima uang</div></div>
+    </button>
+    <button class="big-btn out" onclick="vibrate(15);openAdd('out')" aria-label="Catat pengeluaran">
+      <div class="ic"><svg class="svg" viewBox="0 0 24 24"><path d="M12 20V6"/><path d="M5 13l7-7 7 7"/></svg></div>
+      <div><div class="t">Uang Keluar</div><div class="s">Makan, belanja, bayar</div></div>
+    </button>
+  </div>
+
   <div class="card hoverable">
     <h3>⚡ Akses Cepat</h3>
     <div class="qa">
-      <a onclick="vibrate(12);openAdd('in')"><div class="c"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>Pemasukan</a>
-      <a onclick="vibrate(12);openAdd('out')"><div class="c"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>Pengeluaran</a>
-      <a onclick="vibrate(12);openAdd('transfer')"><div class="c"><svg class="ic" viewBox="0 0 24 24"><path d="M7 7h13M17 4l3 3-3 3M17 17H4M7 20l-3-3 3-3"/></svg></div>Transfer</a>
-      <a onclick="vibrate(12);openAdd('bill')"><div class="c"><svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>Tagihan</a>
-      <a onclick="vibrate(12);openAdd('goal')"><div class="c"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div>Target</a>
+      <button class="qa-transfer" onclick="vibrate(12);openAdd('transfer')">
+        <div class="c"><svg class="ic" viewBox="0 0 24 24"><path d="M7 7h13M17 4l3 3-3 3M17 17H4M7 20l-3-3 3-3"/></svg></div>
+        <span>Transfer</span>
+      </button>
+      <button class="qa-bill" onclick="vibrate(12);openAdd('bill')">
+        <div class="c"><svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+        <span>Tagihan</span>
+      </button>
+      <button class="qa-goal" onclick="vibrate(12);openAdd('goal')">
+        <div class="c"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div>
+        <span>Target</span>
+      </button>
     </div>
   </div>`;
 }
@@ -1346,12 +1386,63 @@ function renderLaporan(){
   </div>`;
 }
 
+/* ===================== MISI AWAL (onboarding checklist) ===================== */
+function misiStatus(){
+  const d = D();
+  const tasks = [
+    {id:'profil', nama:'Lengkapi profil', desc:'Isi nama Anda', done: !!(d.pengaturan.nama && d.pengaturan.nama !== 'Pengguna')},
+    {id:'penghasilan', nama:'Isi penghasilan bulanan', desc:'Agar rekomendasi & skor akurat', done: +d.pengaturan.penghasilanBulanan > 0},
+    {id:'biaya', nama:'Isi biaya hidup bulanan', desc:'Untuk hitung dana darurat', done: biayaHidupPokok() > 0},
+    {id:'rekening', nama:'Tambah rekening', desc:'Bank/e-wallet + nomor rekening', done: d.rekening.some(r => r.nomor_rekening || +r.saldo_awal > 0)},
+    {id:'trx', nama:'Catat transaksi pertama', desc:'Uang masuk atau keluar', done: d.transaksi.length > 0},
+    {id:'anggaran', nama:'Buat anggaran', desc:'Batas pengeluaran per kategori', done: d.anggaran.length > 0},
+    {id:'target', nama:'Buat target tabungan', desc:'cth: beli laptop, liburan', done: d.target.length > 0},
+  ];
+  const done = tasks.filter(t => t.done).length;
+  return {tasks, done, total: tasks.length, pct: Math.round(done/tasks.length*100)};
+}
+function misiClick(id){
+  vibrate(12);
+  if(id==='profil'){ go('pengaturan'); setTimeout(()=>{ const el=$('_setNama'); if(el){ el.focus(); el.scrollIntoView({behavior:'smooth',block:'center'}); } }, 300); return; }
+  if(id==='penghasilan'){ openIncome(); return; }
+  if(id==='biaya'){ openEmergency(); return; }
+  if(id==='rekening'){ openRekeningForm(); return; }
+  if(id==='trx'){ openAddPicker(); return; }
+  if(id==='anggaran'){ openAdd('budget'); return; }
+  if(id==='target'){ openAdd('goal'); return; }
+}
+function renderMisiCard(){
+  const m = misiStatus();
+  const pct = m.pct;
+  const selesai = pct===100;
+  return `
+  <div class="card">
+    <h3>🎯 Misi Awal <button class="info" title="Daftar langkah awal untuk mulai memakai SmartFin. Selesaikan agar rekomendasi &amp; skor keuangan akurat. Klik tiap item untuk mulai.">?</button> ${selesai?'<span class="chip g" style="margin-left:auto">Selesai 🎉</span>':`<span class="chip a" style="margin-left:auto">${m.done}/${m.total}</span>`}</h3>
+    ${selesai?'':`<div class="hint" style="margin-bottom:10px">Selesaikan langkah berikut agar SmartFin bisa memberi rekomendasi &amp; skor yang akurat. <b>Ketuk tiap item</b> untuk mulai.</div>`}
+    <div class="prog" style="margin-bottom:12px"><div class="f ${selesai?'g':'a'}" style="width:${pct}%"></div></div>
+    <div class="list">
+      ${m.tasks.map((t,i) => `
+        <div class="li" onclick="misiClick('${t.id}')" style="cursor:pointer">
+          <div class="ic-c" style="background:${t.done?'var(--pri-l)':'var(--amber-l)'};color:${t.done?'var(--pri)':'var(--amber)'};font-weight:800;font-size:16px">${t.done?'✓':(i+1)}</div>
+          <div class="grow">
+            <div class="nm" style="${t.done?'color:var(--mut)':''}">${t.nama}</div>
+            <div class="sb">${t.desc}</div>
+          </div>
+          <span style="color:var(--mut);font-weight:700;font-size:16px">${t.done?'':'›'}</span>
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
+}
+
 /* ===================== PENGATURAN ===================== */
 function renderPengaturan(){
   const set=D().pengaturan;
   const nf=set.notif||{}; const tq=set.tenang||{};
   $('v-pengaturan').innerHTML=`
   <div class="hdr">Pengaturan<div class="sub">Profil, rekening &amp; preferensi</div></div>
+
+  ${renderMisiCard()}
 
   <div class="card">
     <h3>👤 Profil</h3>
@@ -1517,11 +1608,40 @@ function openSheet(title, body){ $('sheetBody').innerHTML=`<h2>${E(title)}<span 
 function closeSheet(){ $('scrim').classList.remove('on'); $('sheet').classList.remove('on'); }
 
 function openAdd(type){
-  type=type||'out';
+  if(!type) return openAddPicker();
   if(type==='in'||type==='out'||type==='transfer') return openTrxForm(type);
   if(type==='bill') return openBillForm();
   if(type==='goal') return openGoalForm();
   if(type==='budget') return openBudgetForm();
+}
+/* ===== Pilih Aksi (dipakai FAB + tombol +) — pilihan jenis transaksi ===== */
+function openAddPicker(){
+  openSheet('Pilih Aksi', `
+    <div class="hint" style="margin-bottom:12px">Pilih jenis transaksi yang ingin Anda catat.</div>
+    <div class="big-actions" style="margin:0 0 14px">
+      <button class="big-btn in" onclick="closeSheet();vibrate(15);openAdd('in')">
+        <div class="ic"><svg class="svg" viewBox="0 0 24 24"><path d="M12 4v14"/><path d="M19 14l-7 7-7-7"/></svg></div>
+        <div><div class="t">Uang Masuk</div><div class="s">Gaji, bonus, terima uang</div></div>
+      </button>
+      <button class="big-btn out" onclick="closeSheet();vibrate(15);openAdd('out')">
+        <div class="ic"><svg class="svg" viewBox="0 0 24 24"><path d="M12 20V6"/><path d="M5 13l7-7 7 7"/></svg></div>
+        <div><div class="t">Uang Keluar</div><div class="s">Makan, belanja, bayar</div></div>
+      </button>
+    </div>
+    <div class="qa">
+      <button class="qa-transfer" onclick="closeSheet();vibrate(12);openAdd('transfer')">
+        <div class="c"><svg class="ic" viewBox="0 0 24 24"><path d="M7 7h13M17 4l3 3-3 3M17 17H4M7 20l-3-3 3-3"/></svg></div>
+        <span>Transfer</span>
+      </button>
+      <button class="qa-bill" onclick="closeSheet();vibrate(12);openAdd('bill')">
+        <div class="c"><svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+        <span>Tagihan</span>
+      </button>
+      <button class="qa-goal" onclick="closeSheet();vibrate(12);openAdd('goal')">
+        <div class="c"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div>
+        <span>Target</span>
+      </button>
+    </div>`);
 }
 
 function katOpts(tipe, sel){ return D().kategori.filter(k=>k.tipe===tipe).map(k=>`<option value="${k.id}" ${sel===k.id?'selected':''}>${k.ikon} ${E(k.nama)}</option>`).join(''); }
@@ -1541,21 +1661,14 @@ function amtClear(id){ const el=document.getElementById(id); if(!el)return; el.v
 function nameChips(targetId,names){ return `<div class="quick-names">${names.map(n=>`<button type="button" onclick="vibrate(8);setVal('${targetId}','${E(n)}')">${E(n)}</button>`).join('')}</div>`; }
 
 function openTrxForm(tipe, prefill){
-  const defKat = tipe==='in'?'k1':'k10';
   const body=`
-  <div class="seg" id="_tipeSeg">
-    <button class="${tipe==='in'?'on':''}" onclick="vibrate(8);_setTipe='in';_syncSeg()">Pemasukan</button>
-    <button class="${tipe==='out'?'on':''}" onclick="vibrate(8);_setTipe='out';_syncSeg()">Pengeluaran</button>
-    <button class="${tipe==='transfer'?'on':''}" onclick="vibrate(8);_setTipe='transfer';_syncSeg()">Transfer</button>
-  </div>
   <div id="_trxFormBody"></div>
   <div class="row" style="gap:8px;margin-top:6px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="vibrate(20);saveTrx()">Simpan</button></div>`;
   window._setTipe=tipe; window._editTrx=null; window._prefill=prefill||null;
-  openSheet(tipe==='in'?'Tambah Pemasukan':tipe==='out'?'Tambah Pengeluaran':'Transfer', body);
+  openSheet(tipe==='in'?'Catat Uang Masuk':tipe==='out'?'Catat Uang Keluar':'Transfer Antar Rekening', body);
   _syncSeg();
 }
 function _syncSeg(){
-  document.querySelectorAll('#_tipeSeg button').forEach((b,i)=>{ const m=['in','out','transfer'][i]; b.classList.toggle('on',m===_setTipe); });
   const t=_setTipe;
   const kats = t==='in'?katOpts('in','k1'):katOpts('out','k10');
   $('_trxFormBody').innerHTML=`
@@ -1565,8 +1678,8 @@ function _syncSeg(){
     </div>
     ${t==='transfer'?`<div class="fld"><label>Ke rekening</label><select id="_fRekTo">${rekOpts(D().rekening[1]?D().rekening[1].id:'')}</select></div>`:''}
     ${t!=='transfer'?`<div class="fld"><label>Kategori</label><select id="_fKat">${kats}</select></div>`:''}
-    ${amtField('_fJml', t==='in'?'Jumlah diterima':t==='transfer'?'Jumlah ditransfer':'Jumlah pengeluaran', [10000,25000,50000,100000,200000,500000,1000000,2000000])}
-    <div class="fld"><label>Keterangan</label><input id="_fDesc" placeholder="cth: Gaji bulan Nov"></div>`;
+    ${amtField('_fJml', t==='in'?'Berapa uang yang masuk?':t==='transfer'?'Berapa uang ditransfer?':'Berapa uang yang keluar?', [10000,25000,50000,100000,200000,500000,1000000,2000000])}
+    <div class="fld"><label>Keterangan <span style="color:var(--mut2);font-weight:500">(opsional)</span></label><input id="_fDesc" placeholder="${t==='in'?'cth: Gaji November, bonus proyek':t==='transfer'?'cth: Pindah ke tabungan':'cth: Makan siang, beli pulsa'}"></div>`;
   if(window._prefill){
     const p=window._prefill; window._prefill=null;
     if(p.amount) setVal('_fJml', (+p.amount).toLocaleString('id-ID'));
@@ -1700,7 +1813,7 @@ function exportCSV(){
 }
 function exportJSON(){ const blob=new Blob([JSON.stringify(D(),null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='smartfin-backup-'+todayISO()+'.json'; a.click(); vibrate(15); toast('Backup terunduh'); }
 function importJSON(){ const i=document.createElement('input'); i.type='file'; i.accept='.json'; i.onchange=e=>{ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>{ try{ const d=JSON.parse(r.result); S.d=normalizeD(d); persist(); recomputeAll(); vibrate(20); toast('Data dipulihkan'); }catch(err){toast('File tidak valid',1);} }; r.readAsText(f); }; i.click(); }
-function resetData(){ if(!confirm('Reset SEMUA data? Semua catatan akan DIKOSONGKAN dan aplikasi kembali seperti baru. Tindakan ini tidak bisa dibatalkan.'))return; vibrate([30,50,30,50]); localStorage.removeItem('sf_d'); S.d=JSON.parse(JSON.stringify(KOSONG)); persist(); recomputeAll(); toast('Semua data dikosongkan'); }
+function resetData(){ if(!confirm('Reset SEMUA data? Semua catatan akan DIKOSONGKAN dan aplikasi kembali seperti baru. Tindakan ini tidak bisa dibatalkan.'))return; vibrate([30,50,30,50]); localStorage.removeItem('sf_d'); localStorage.removeItem('sf_misiShown'); S.d=JSON.parse(JSON.stringify(KOSONG)); persist(); recomputeAll(); S.tab='pengaturan'; go('pengaturan'); setTimeout(()=>toast('Semua data dikosongkan — selesaikan Misi untuk mulai lagi'),400); }
 
 /* ===================== INIT ===================== */
 document.addEventListener('input', e=>{ const t=e.target; if(t.classList&&t.classList.contains('rp')){
