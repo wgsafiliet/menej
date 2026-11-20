@@ -188,6 +188,18 @@ input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink)}
 .kat-combo::after{content:"▾";position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--mut);pointer-events:none;font-size:14px}
 .kat-hint{font-size:11px;color:var(--mut2);margin-top:4px;font-weight:500}
 
+/* Chips kategori — list horizontal, ketuk untuk pilih */
+.kat-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
+.kat-chip{display:inline-flex;align-items:center;gap:5px;padding:8px 12px;border-radius:20px;background:var(--card);border:1.5px solid var(--line);font-size:12.5px;font-weight:600;color:var(--ink);cursor:pointer;transition:all .12s;font-family:inherit}
+.kat-chip:active{transform:scale(.94)}
+.kat-chip.on{background:var(--pri);color:#fff;border-color:var(--pri);box-shadow:0 2px 8px rgba(15,157,107,.3)}
+.kat-chip .chip-ic{font-size:14px;line-height:1}
+.kat-chip.kat-add{border-style:dashed;color:var(--mut);background:var(--line2)}
+.kat-chip.kat-add.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.kat-inline-add{flex-basis:100%;margin-top:8px;display:flex;gap:8px;align-items:center;padding:10px;background:var(--pri-l);border-radius:11px}
+.kat-inline-add input{flex:1;padding:9px 12px;border:1px solid var(--pri);border-radius:9px;font-size:13px;background:#fff;outline:none}
+.kat-inline-add input:focus{box-shadow:0 0 0 3px var(--pri-l)}
+
 /* Tombol hapus kecil di baris kategori custom */
 .kat-del{width:28px;height:28px;border-radius:8px;background:var(--red-l);color:var(--red);font-size:16px;font-weight:700;border:0;cursor:pointer;display:grid;place-items:center;line-height:1;margin-right:6px;flex-shrink:0;transition:transform .08s}
 .kat-del:active{transform:scale(.9);background:var(--red);color:#fff}
@@ -1245,21 +1257,90 @@ function openAddPicker(){
 function katOpts(tipe, sel){
   return D().kategori.filter(k=>k.tipe===tipe).map(k=>'<option value="'+k.id+'" '+(sel===k.id?'selected':'')+'>'+k.ikon+' '+E(k.nama)+'</option>').join('');
 }
-/* Combobox kategori — input + datalist, user bisa pilih existing ATAU ketik sendiri */
-function katField(tipe, selId){
+/* Chips kategori — list horizontal yang bisa diketuk.
+   Kategori baru yang ditambahkan otomatis tersimpan & muncul di list berikutnya. */
+let _selectedKat = null;
+function katChips(tipe, selId){
   const kats = D().kategori.filter(k=>k.tipe===tipe);
-  const listId = '_katDL_'+tipe;
-  const selKat = kats.find(k=>k.id===selId) || kats[0];
-  const selVal = selKat ? (selKat.ikon+' '+selKat.nama) : '';
-  const options = kats.map(k=>'<option value="'+k.ikon+' '+E(k.nama)+'">').join('');
-  const phMap = {in:'cth: Penjualan, Jasa, Modal...', out:'cth: Makan, Stok, Listrik...', sav:'cth: Dana Darurat, Investasi, Tabungan Rumah...'};
-  return '<div class="fld"><label>Kategori <span class="xs muted" style="font-weight:500">(boleh ketik sendiri)</span></label>'+
-    '<div class="kat-combo"><input id="_fKat" list="'+listId+'" value="'+E(selVal)+'" placeholder="'+phMap[tipe]+'" autocomplete="off"></div>'+
-    '<datalist id="'+listId+'">'+options+'</datalist>'+
-    '<div class="kat-hint">Pilih dari daftar atau ketik nama kategori baru — otomatis disimpan</div>'+
-  '</div>';
+  _selectedKat = selId || (kats[0] && kats[0].id) || null;
+  const containerId = '_katChips_'+tipe;
+  let html = '<div class="fld"><label>Kategori <span class="xs muted" style="font-weight:500">(ketuk untuk pilih)</span></label>';
+  html += '<div class="kat-chips" id="'+containerId+'">';
+  html += renderKatChipsHTML(tipe);
+  html += '</div>';
+  html += '<input type="hidden" id="_fKat" value="'+(_selectedKat||'')+'">';
+  html += '<div class="kat-hint">Kategori baru tersimpan otomatis — muncul di list berikutnya tanpa perlu ketik ulang</div>';
+  html += '</div>';
+  return html;
 }
-/* Cari kategori by nama, kalau tidak ada → buat baru */
+function renderKatChipsHTML(tipe){
+  const kats = D().kategori.filter(k=>k.tipe===tipe);
+  return kats.map(k=>'<button type="button" class="kat-chip'+(k.id===_selectedKat?' on':'')+'" onclick="selectKat(this,\''+k.id+'\')"><span class="chip-ic">'+k.ikon+'</span><span>'+E(k.nama)+'</span></button>').join('') +
+    '<button type="button" class="kat-chip kat-add" onclick="showAddKatInline(\''+tipe+'\')">+ Tambah</button>';
+}
+function selectKat(btn, id){
+  vibrate(8);
+  _selectedKat = id;
+  const container = btn.parentElement;
+  container.querySelectorAll('.kat-chip').forEach(c=>c.classList.remove('on'));
+  btn.classList.add('on');
+  const inp = document.getElementById('_fKat');
+  if(inp) inp.value = id;
+}
+function showAddKatInline(tipe){
+  vibrate(10);
+  const container = document.getElementById('_katChips_'+tipe);
+  if(!container) return;
+  // Toggle: kalau inline input sudah ada, hapus
+  const existing = container.querySelector('.kat-inline-add');
+  if(existing){ existing.remove(); return; }
+  // Buat inline input untuk ketik kategori baru
+  const phMap = {in:'cth: Penjualan Online, Jasa Konsultasi...', out:'cth: Marketing, Sewa Alat...', sav:'cth: Tabungan Rumah, Tabungan Liburan...'};
+  const div = document.createElement('div');
+  div.className = 'kat-inline-add';
+  div.innerHTML = '<input type="text" id="_katInlineNama" placeholder="'+phMap[tipe]+'" autocomplete="off">'+
+    '<button type="button" class="btn sm" onclick="saveKatInline(\''+tipe+'\')">+ Simpan</button>'+
+    '<button type="button" class="btn ghost sm" onclick="this.parentElement.remove()">Batal</button>';
+  container.appendChild(div);
+  setTimeout(()=>{ const inp = document.getElementById('_katInlineNama'); if(inp) inp.focus(); }, 50);
+}
+function saveKatInline(tipe){
+  const inp = document.getElementById('_katInlineNama');
+  if(!inp) return;
+  const nama = inp.value.trim();
+  if(!nama){ toast('Isi nama kategori dulu', 1); inp.focus(); return; }
+  // Cek duplikat (case-insensitive)
+  const dup = D().kategori.find(k=>k.tipe===tipe && k.nama.toLowerCase() === nama.toLowerCase());
+  if(dup){
+    // Kalau sudah ada, langsung pilih kategori itu
+    _selectedKat = dup.id;
+    rerenderKatChips(tipe);
+    toast('Kategori "'+nama+'" sudah ada — dipilih');
+    vibrate([10,20,10]);
+    return;
+  }
+  // Buat kategori baru
+  const id = 'kc_' + Date.now().toString(36) + Math.random().toString(36).slice(2,4);
+  const ikon = tipe==='in'?'➕':tipe==='sav'?'💰':'📦';
+  const warna = tipe==='in'?'#22c55e':tipe==='sav'?'#7c5fd6':'#8a98ab';
+  const newKat = {id, nama, tipe, ikon, warna};
+  D().kategori.push(newKat);
+  persist();
+  pushQ({t:'kategori', op:'add', id, row:newKat});
+  _selectedKat = id;
+  // Re-render chips biar kategori baru muncul & ter-select
+  rerenderKatChips(tipe);
+  toast('Kategori "'+nama+'" ditambahkan & dipilih');
+  vibrate([10,20,10]);
+}
+function rerenderKatChips(tipe){
+  const container = document.getElementById('_katChips_'+tipe);
+  if(!container) return;
+  container.innerHTML = renderKatChipsHTML(tipe);
+  const hidden = document.getElementById('_fKat');
+  if(hidden) hidden.value = _selectedKat || '';
+}
+/* Cari kategori by nama, kalau tidak ada → buat baru (utility, dipakai untuk import/migration) */
 function findOrCreateKat(namaInput, tipe){
   // Strip emoji prefix (cth: "🛡️ Dana Darurat" → "Dana Darurat")
   let nama = String(namaInput||'').trim();
@@ -1335,7 +1416,7 @@ function openAdd(tipe, katId){
 
   openSheet('Catat '+tipeLabel, ''+
     '<div class="fld"><label>Tanggal</label><input type="date" id="_fTgl" value="'+todayISO()+'"></div>'+
-    katField(tipe, katId||defaultKat)+
+    katChips(tipe, katId||defaultKat)+
     amtField('_fJml', tipe==='in'?'Berapa uang masuk?':tipe==='sav'?'Berapa disisihkan?':'Berapa uang keluar?', presets)+
     '<div class="fld"><label>Keterangan <span style="color:var(--mut2);font-weight:400">(opsional)</span></label><input id="_fDesc" placeholder="'+ph+'"></div>'+
     '<div class="row" style="gap:8px"><button class="btn ghost grow" onclick="closeSheet()">Batal</button><button class="btn grow" onclick="vibrate(20);saveTrx(\''+tipe+'\')">Simpan</button></div>');
@@ -1345,16 +1426,13 @@ function saveTrx(tipe){
   if(!elJml){toast('Form belum siap',1);closeSheet();return;}
   const jml=rp2num(elJml.value);
   if(jml<=0){toast('Isi jumlah dulu',1);elJml.focus();return;}
-  const elKat=$('_fKat');
-  if(!elKat || !elKat.value.trim()){toast('Isi kategori dulu',1);if(elKat)elKat.focus();return;}
-  // Resolve kategori: existing ID atau buat baru
-  const kategoriId = findOrCreateKat(elKat.value, tipe);
-  if(!kategoriId){toast('Kategori tidak valid',1);elKat.focus();return;}
+  const katId = $('_fKat').value;
+  if(!katId){toast('Pilih kategori dulu',1);return;}
   const row={
     id: uid('trx'),
     tgl: $('_fTgl').value,
     tipe: tipe,
-    kategori_id: kategoriId,
+    kategori_id: katId,
     jumlah: jml,
     deskripsi: $('_fDesc').value
   };
